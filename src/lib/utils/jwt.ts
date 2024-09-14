@@ -10,7 +10,12 @@ export function createAccessToken(payload: User) {
 
 export function verifyAccessToken(token: string) {
   try {
-    return jwt.verify(token, JWT_SECRET) as User;
+    const { iss, sub, aud, exp, nbf, iat, jti, ...user } = jwt.verify(
+      token,
+      JWT_SECRET,
+    ) as jwt.JwtPayload;
+
+    return user as User;
     // eslint-disable-next-line
   } catch (_) {
     return null;

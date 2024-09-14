@@ -3,7 +3,7 @@ import { dev } from "$app/environment";
 
 export function setCookieAccessToken(cookies: Cookies, token: string) {
   cookies.set("access_token", token, {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: 60 * 60 * 24, // 1 day
     path: "/",
     sameSite: "strict",
