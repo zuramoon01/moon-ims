@@ -1,6 +1,6 @@
 <script>
   import { goto } from "$app/navigation";
-  import { user } from "$lib/store";
+  import { user } from "$lib/stores";
 
   async function signout() {
     const response = await fetch("/api/auth/signout", {

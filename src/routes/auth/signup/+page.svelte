@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { user } from "$lib/store";
+  import { user } from "$lib/stores";
 
   let email = "";
   let username = "";

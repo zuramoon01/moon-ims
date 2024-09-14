@@ -1,10 +1,9 @@
-import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { revokeCookieAccessToken } from "$lib/utils";
+import { json } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ cookies }) => {
-  cookies.delete("access_token", {
-    path: "/",
-  });
+  revokeCookieAccessToken(cookies);
 
   return json({
     message: "Berhasil keluar.",

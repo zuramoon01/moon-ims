@@ -1,5 +1,5 @@
 import type { Handle } from "@sveltejs/kit";
-import { verifyAccessToken } from "$lib/server/jwt";
+import { verifyAccessToken } from "$lib/utils";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get("access_token");

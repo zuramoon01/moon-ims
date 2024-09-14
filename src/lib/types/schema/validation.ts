@@ -1,9 +1,3 @@
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-}
-
 export const ValidationMessage = {
   Type: (
     name: string,

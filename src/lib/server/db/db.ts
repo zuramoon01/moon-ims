@@ -1,5 +1,5 @@
-import { PGDATABASE, PGHOST, PGPASSWORD, PGUSER } from "$env/static/private";
 import postgres from "postgres";
+import { PGDATABASE, PGHOST, PGPASSWORD, PGUSER } from "$env/static/private";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
