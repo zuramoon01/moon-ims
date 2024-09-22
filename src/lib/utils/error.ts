@@ -5,16 +5,11 @@ export class DuplicateUserError extends Error {
   }
 }
 
-export class InactiveUserError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InactiveUserError";
-  }
-}
-
 export class InvalidDataError extends Error {
+  // eslint-disable-next-line
   errors?: any;
 
+  // eslint-disable-next-line
   constructor(message: string, errors?: any) {
     super(message);
     this.name = "InvalidDataError";
@@ -27,6 +22,7 @@ export class InvalidDataError extends Error {
 export function errorHandler(error: unknown) {
   const responseData: {
     message: string;
+    // eslint-disable-next-line
     errors?: any;
     errorType: string;
   } = {

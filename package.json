@@ -1,11 +1,14 @@
 {
-  "name": "moon-ims-new",
+  "name": "moon-ims",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "bunx --bun vite dev",
     "build": "bunx --bun vite build",
     "preview": "bunx --bun vite preview",
+    "migration:generate": "bun drizzle-kit generate",
+    "migration:run": "bun run ./src/lib/server/database/migration.ts",
     "test": "npm run test:integration && npm run test:unit",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -14,12 +17,11 @@
     "test:integration": "playwright test",
     "test:unit": "vitest"
   },
-  "type": "module",
   "dependencies": {
     "drizzle-orm": "^0.33.0",
     "jsonwebtoken": "^9.0.2",
     "postgres": "^3.4.4",
-    "zod": "^3.23.8"
+    "valibot": "^0.42.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

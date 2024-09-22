@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { user } from "$lib/stores";
-  import { InputEmail, InputPassword, InputText } from "$lib/components";
+  import { Button, Input } from "$lib/components";
 
-  let email = "";
   let username = "";
   let password = "";
   let confirmPassword = "";
@@ -15,7 +14,6 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email,
         username,
         password,
         confirmPassword,
@@ -32,71 +30,68 @@
   }
 </script>
 
-<div class="flex min-h-dvh w-full items-center justify-center">
-  <div
-    class="flex w-[25rem] flex-col items-start gap-10 rounded-md border border-black bg-white px-6 py-8"
+<div
+  class="bg-secondary flex w-full flex-col items-start gap-4 rounded-xl px-4 py-6"
+>
+  <div class="flex w-full items-center">
+    <h1 class="text-3xl text-black/80">Daftar</h1>
+  </div>
+
+  <form
+    on:submit|preventDefault={signUp}
+    class="flex w-full flex-col items-start gap-8"
   >
-    <div class="w-full">
-      <h1 class="text-3xl/[100%] font-semibold">Daftar</h1>
+    <div class="flex w-full flex-col items-start gap-4">
+      <Input
+        bind:value={username}
+        props={{
+          type: "text",
+          label: "Nama",
+          id: "username",
+          name: "username",
+          placeholder: "Masukkan nama",
+          required: true,
+        }}
+      />
+
+      <Input
+        bind:value={password}
+        props={{
+          type: "password",
+          label: "Kata sandi",
+          id: "password",
+          name: "password",
+          placeholder: "Masukkan kata sandi",
+          required: true,
+        }}
+      />
+
+      <Input
+        bind:value={confirmPassword}
+        props={{
+          type: "password",
+          label: "Konfirmasi kata sandi",
+          id: "confirmPassword",
+          name: "confirmPassword",
+          placeholder: "Masukkan konfirmasi kata sandi",
+          required: true,
+        }}
+      />
     </div>
 
-    <div class="flex w-full flex-col items-start gap-6">
-      <form
-        on:submit|preventDefault={signUp}
-        class="flex w-full flex-col items-start gap-8"
+    <Button
+      props={{
+        text: "Daftar",
+      }}
+    />
+  </form>
+
+  <div class="flex w-full items-center justify-center">
+    <p class="text-black/80">
+      Sudah punya akun ? <a
+        href="/auth/signin"
+        class="underline">Masuk</a
       >
-        <div class="flex w-full flex-col items-start gap-6">
-          <InputEmail
-            bind:value={email}
-            props={{
-              text: "Email",
-              id: "email",
-              placeholder: "Masukkan email",
-            }}
-          />
-
-          <InputText
-            bind:value={username}
-            props={{
-              text: "Nama",
-              id: "nama",
-              placeholder: "Masukkan nama",
-            }}
-          />
-
-          <InputPassword
-            bind:value={password}
-            props={{
-              text: "Kata sandi",
-              id: "password",
-              placeholder: "Masukkan kata sandi",
-            }}
-          />
-
-          <InputPassword
-            bind:value={confirmPassword}
-            props={{
-              text: "Konfirmasi kata sandi",
-              id: "confirmPassword",
-              placeholder: "Masukkan konfirmasi kata sandi",
-            }}
-          />
-        </div>
-
-        <button
-          class="flex h-10 w-full items-center justify-center rounded-sm bg-black text-base/[100%] font-bold text-white"
-          >Daftar</button
-        >
-      </form>
-
-      <div class="flex w-full items-center justify-center">
-        <span class="text-base/[100%]"
-          >Sudah punya akun ? <a
-            href="/auth/signin"
-            class="font-bold underline">Masuk</a
-          ></span
-        >
-      </div>
-    </div>
+    </p>
   </div>
 </div>

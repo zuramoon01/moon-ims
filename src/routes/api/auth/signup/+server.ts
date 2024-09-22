@@ -1,13 +1,9 @@
 import type { RequestHandler } from "./$types";
-import { z } from "zod";
+import * as v from "valibot";
+import { passwordSchema, usernameSchema } from "$lib/types";
+import { insertUser } from "$lib/server/database";
 import {
-  confirmPasswordSchema,
-  emailSchema,
-  passwordSchema,
-  usernameSchema,
-} from "$lib/types";
-import { insertAccessToken, insertUser } from "$lib/server/db";
-import {
+  createAccessToken,
   DuplicateUserError,
   errorHandler,
   InvalidDataError,
@@ -17,25 +13,23 @@ import { json } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
-    const result = z
-      .object({
-        email: emailSchema,
+    const { output, issues } = v.safeParse(
+      v.object({
         username: usernameSchema,
         password: passwordSchema,
-        confirmPassword: confirmPasswordSchema,
-      })
-      .safeParse(await request.json());
+        confirmPassword: passwordSchema,
+      }),
+      await request.json(),
+    );
 
-    if (!result.success) {
+    if (issues) {
       throw new InvalidDataError(
-        "Email atau nama atau kata sandi atau konfirmasi kata sandi yang dimasukkan salah.",
-        result.error.format(),
+        "Nama atau kata sandi atau konfirmasi kata sandi yang dimasukkan salah.",
+        v.flatten(issues),
       );
     }
 
-    const {
-      data: { email, username, password, confirmPassword },
-    } = result;
+    const { username, password, confirmPassword } = output;
 
     if (password !== confirmPassword) {
       throw new InvalidDataError(
@@ -50,20 +44,19 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     });
 
     const [user] = await insertUser({
-      email,
       username,
       passwordHash,
     });
 
     if (!user) {
       throw new DuplicateUserError(
-        "Pengguna dengan email atau nama sudah digunakan.",
+        `Pengguna dengan nama ${username} sudah digunakan.`,
       );
     }
 
-    const [accessToken] = await insertAccessToken(user);
+    const accessToken = createAccessToken(user);
 
-    setCookieAccessToken(cookies, accessToken.token);
+    setCookieAccessToken(cookies, accessToken);
 
     return json({
       message: "Berhasil mendaftarkan akun.",

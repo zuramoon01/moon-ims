@@ -1,10 +1,10 @@
 import type { RequestHandler } from "./$types";
-import { z } from "zod";
-import { emailSchema, passwordSchema } from "$lib/types";
-import { getUserByEmail, insertAccessToken } from "$lib/server/db";
+import * as v from "valibot";
+import { passwordSchema, usernameSchema } from "$lib/types";
+import { getUserByUsename } from "$lib/server/database";
 import {
+  createAccessToken,
   errorHandler,
-  InactiveUserError,
   InvalidDataError,
   setCookieAccessToken,
 } from "$lib/utils";
@@ -12,51 +12,37 @@ import { json } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
-    const result = z
-      .object({
-        email: emailSchema,
+    const { output, issues } = v.safeParse(
+      v.object({
+        username: usernameSchema,
         password: passwordSchema,
-      })
-      .safeParse(await request.json());
+      }),
+      await request.json(),
+    );
 
-    if (!result.success) {
+    if (issues) {
       throw new InvalidDataError(
-        "Email atau kata sandi yang dimasukkan salah.",
-        result.error.format(),
+        "Nama atau kata sandi yang dimasukkan salah.",
+        v.flatten(issues),
       );
     }
 
-    const {
-      data: { email, password },
-    } = result;
+    const { username, password } = output;
 
-    const [user] = await getUserByEmail(email);
+    const [user] = await getUserByUsename(username);
 
-    if (!user) {
-      throw new InvalidDataError(
-        "Email atau kata sandi yang dimasukkan salah.",
-      );
-    }
-
-    if (!user.isActive) {
-      throw new InactiveUserError("Akun pengguna sudah tidak aktif.");
-    }
-
-    if (!(await Bun.password.verify(password, user.passwordHash))) {
-      throw new InvalidDataError(
-        "Email atau kata sandi yang dimasukkan salah.",
-      );
+    if (!user || !(await Bun.password.verify(password, user.passwordHash))) {
+      throw new InvalidDataError("Nama atau kata sandi yang dimasukkan salah.");
     }
 
     const userData = {
       id: user.id,
-      email: user.email,
       username: user.username,
     };
 
-    const [accessToken] = await insertAccessToken(userData);
+    const accessToken = createAccessToken(userData);
 
-    setCookieAccessToken(cookies, accessToken.token);
+    setCookieAccessToken(cookies, accessToken);
 
     return json({
       message: "Berhasil masuk.",

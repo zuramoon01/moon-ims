@@ -10,3 +10,9 @@
 </script>
 
 <slot />
+
+<style lang="postcss">
+  :global(body) {
+    background-color: theme("colors.primary");
+  }
+</style>

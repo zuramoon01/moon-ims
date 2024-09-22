@@ -1,13 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  schema: "./src/lib/server/db/schema/index.ts",
+  schema: "./src/lib/server/database/schema/index.ts",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    database: process.env.PGDATABASE as string,
-    host: process.env.PGHOST as string,
-    password: process.env.PGPASSWORD as string,
-    user: process.env.PGUSER as string,
+    url: process.env.DATABASE_URL as string,
   },
 });

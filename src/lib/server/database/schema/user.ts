@@ -1,24 +1,18 @@
 import { sql } from "drizzle-orm";
 import {
-  boolean,
-  index,
   pgTable,
+  primaryKey,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const users = pgTable(
+export const usersTable = pgTable(
   "users",
   {
     id: uuid("id")
-      .default(sql`gen_random_uuid()`)
-      .primaryKey(),
-    email: varchar("email", {
-      length: 255,
-    })
       .notNull()
-      .unique("users_email_unique"),
+      .default(sql`gen_random_uuid()`),
     username: varchar("username", {
       length: 25,
     })
@@ -39,12 +33,13 @@ export const users = pgTable(
     })
       .notNull()
       .defaultNow(),
-    isActive: boolean("is_active").notNull().default(true),
   },
   (table) => {
     return {
-      usersEmailIndex: index("users_email_idx").on(table.email),
-      usersUsernameIndex: index("users_username_idx").on(table.username),
+      primaryKey: primaryKey({
+        name: "users_pkey",
+        columns: [table.id],
+      }),
     };
   },
 );
