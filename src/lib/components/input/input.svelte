@@ -1,36 +1,37 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
-  import { errorMessageClass, inputClass, labelClass } from "./style";
-
-  interface Props extends Omit<HTMLInputAttributes, "value"> {
-    label: string;
-    errorMessages?: string[];
-  }
+  import { inputClass } from "./style";
 
   export let value: string = "";
-  export let props: Props;
-
-  const { label, errorMessages, class: classes, ...attr } = props;
+  export let label: string = "Label text";
+  export let errorMessages: string[] = [];
+  export let attr: Omit<HTMLInputAttributes, "value">;
 </script>
 
 <div class="flex w-full flex-col items-start gap-1">
-  <div class="flex w-full items-center px-1">
+  <div class="flex w-full items-center gap-1 px-1">
     <label
       for={attr.id}
-      class={labelClass}>{label}</label
+      class="text-sm text-black/80">{label}</label
     >
+
+    {#if attr.required}
+      <p class="text-red/80">*</p>
+    {/if}
   </div>
 
   <input
     {...attr}
     bind:value={value}
-    class={inputClass(classes, !!errorMessages)}
+    on:input
+    data-error={errorMessages.length > 0}
+    class={inputClass(attr.class)}
   />
 
-  {#if errorMessages}
-    <div class="text-red/40 flex w-full flex-col items-start text-sm">
+  {#if errorMessages.length > 0}
+    <div class="flex w-full flex-col items-start text-sm text-red/40">
       {#each errorMessages as message}
-        <p class={errorMessageClass}>
+        <p>
           - {message}
         </p>
       {/each}

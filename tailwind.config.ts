@@ -9,6 +9,8 @@ export default {
         primary: "#40352C",
         secondary: "#F1F2D8",
         red: "#FF0000",
+        yellow: "#FFFF00",
+        green: "#00FF00",
         blue: "#0000FF",
       },
       fontFamily: {

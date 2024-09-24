@@ -1,38 +1,112 @@
 <script lang="ts">
+  import * as v from "valibot";
+  import { confirmPasswordSchema, passwordSchema, usernameSchema } from "$lib/types";
+  import axios, { AxiosError } from "axios";
   import { goto } from "$app/navigation";
-  import { user } from "$lib/stores";
+  import { addToast, user } from "$lib/stores";
   import { Button, Input } from "$lib/components";
+  import { Plus } from "lucide-svelte";
+
+  let state: "idle" | "loading" = "idle";
+
+  let controller = new AbortController();
 
   let username = "";
+  let usernameErrors: string[] = [];
+
   let password = "";
+  let passwordErrors: string[] = [];
+
   let confirmPassword = "";
+  let confirmPasswordErrors: string[] = [];
+
+  function handleValidation(
+    value: string,
+    schema: typeof usernameSchema | typeof passwordSchema | typeof confirmPasswordSchema,
+  ) {
+    if (value === "") {
+      return [];
+    }
+
+    const { issues } = v.safeParse(schema, value);
+
+    return issues ? v.flatten(issues).root || [] : [];
+  }
+
+  function validateInput(id: "username" | "password" | "confirmPassword") {
+    if (id === "username") {
+      usernameErrors = handleValidation(username, usernameSchema);
+    } else if (id === "password") {
+      passwordErrors = handleValidation(password, passwordSchema);
+    } else {
+      confirmPasswordErrors = handleValidation(confirmPassword, confirmPasswordSchema);
+    }
+  }
 
   async function signUp() {
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-        confirmPassword,
-      }),
-    });
+    try {
+      if (usernameErrors.length > 0 || passwordErrors.length > 0) {
+        addToast({
+          title: "Warning",
+          description: "Silahkan isi form daftar terlebih dahulu.",
+        });
 
-    const result = await response.json();
+        return;
+      }
 
-    if (response.ok) {
-      user.set(result.data);
+      if (state === "loading") {
+        controller.abort();
+        controller = new AbortController();
+      }
+
+      if (state === "idle") {
+        state = "loading";
+      }
+
+      const { data } = await axios.post(
+        "/api/auth/signup",
+        {
+          username,
+          password,
+          confirmPassword,
+        },
+        {
+          signal: controller.signal,
+        },
+      );
+
+      addToast({
+        title: "Success",
+        description: data.message,
+      });
+
+      user.set(data.data);
 
       goto("/");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          const { data, status, headers } = error.response;
+
+          addToast({
+            title: "Error",
+            description: data.message,
+          });
+
+          console.log({ data, status, headers });
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log("Error", error.message);
+        }
+      }
     }
+
+    state = "idle";
   }
 </script>
 
-<div
-  class="bg-secondary flex w-full flex-col items-start gap-4 rounded-xl px-4 py-6"
->
+<div class="flex w-full flex-col items-start gap-4 rounded-xl bg-secondary px-4 py-6">
   <div class="flex w-full items-center">
     <h1 class="text-3xl text-black/80">Daftar</h1>
   </div>
@@ -44,9 +118,13 @@
     <div class="flex w-full flex-col items-start gap-4">
       <Input
         bind:value={username}
-        props={{
+        on:input={() => {
+          validateInput("username");
+        }}
+        label="Nama"
+        errorMessages={usernameErrors}
+        attr={{
           type: "text",
-          label: "Nama",
           id: "username",
           name: "username",
           placeholder: "Masukkan nama",
@@ -56,9 +134,13 @@
 
       <Input
         bind:value={password}
-        props={{
+        on:input={() => {
+          validateInput("password");
+        }}
+        label="Kata sandi"
+        errorMessages={passwordErrors}
+        attr={{
           type: "password",
-          label: "Kata sandi",
           id: "password",
           name: "password",
           placeholder: "Masukkan kata sandi",
@@ -68,9 +150,13 @@
 
       <Input
         bind:value={confirmPassword}
-        props={{
+        on:input={() => {
+          validateInput("confirmPassword");
+        }}
+        label="Konfirmasi kata sandi"
+        errorMessages={confirmPasswordErrors}
+        attr={{
           type: "password",
-          label: "Konfirmasi kata sandi",
           id: "confirmPassword",
           name: "confirmPassword",
           placeholder: "Masukkan konfirmasi kata sandi",
@@ -80,9 +166,8 @@
     </div>
 
     <Button
-      props={{
-        text: "Daftar",
-      }}
+      state={state}
+      text={"Daftar"}
     />
   </form>
 

@@ -8,7 +8,7 @@ import {
   errorHandler,
   InvalidDataError,
   setCookieAccessToken,
-} from "$lib/utils";
+} from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
@@ -25,7 +25,6 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     if (issues) {
       throw new InvalidDataError(
         "Nama atau kata sandi atau konfirmasi kata sandi yang dimasukkan salah.",
-        v.flatten(issues),
       );
     }
 
@@ -49,9 +48,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     });
 
     if (!user) {
-      throw new DuplicateUserError(
-        `Pengguna dengan nama ${username} sudah digunakan.`,
-      );
+      throw new DuplicateUserError(`Pengguna dengan nama ${username} sudah digunakan.`);
     }
 
     const accessToken = createAccessToken(user);

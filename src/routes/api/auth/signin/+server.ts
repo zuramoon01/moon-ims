@@ -7,7 +7,7 @@ import {
   errorHandler,
   InvalidDataError,
   setCookieAccessToken,
-} from "$lib/utils";
+} from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
@@ -21,10 +21,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     );
 
     if (issues) {
-      throw new InvalidDataError(
-        "Nama atau kata sandi yang dimasukkan salah.",
-        v.flatten(issues),
-      );
+      throw new InvalidDataError("Nama atau kata sandi yang dimasukkan salah.");
     }
 
     const { username, password } = output;

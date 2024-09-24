@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LayoutServerData } from "./$types";
   import { user } from "$lib/stores";
+  import { Toast } from "$lib/components";
 
   import "../app.css";
 
@@ -10,6 +11,8 @@
 </script>
 
 <slot />
+
+<Toast />
 
 <style lang="postcss">
   :global(body) {
