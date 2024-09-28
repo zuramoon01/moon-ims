@@ -5,6 +5,7 @@
   import { goto } from "$app/navigation";
   import { addToast, user } from "$lib/stores";
   import { Button, Input } from "$lib/components";
+  import { clsx } from "clsx";
 
   let state: "idle" | "loading" = "idle";
 
@@ -39,7 +40,7 @@
       if (usernameErrors.length > 0 || passwordErrors.length > 0) {
         addToast({
           title: "Warning",
-          description: "Silahkan isi form masuk terlebih dahulu.",
+          description: "Silahkan isi form masuk sesuai dengan ketentuan yang diberikan.",
         });
 
         return;
@@ -96,17 +97,18 @@
   }
 </script>
 
-<div class="flex w-full flex-col items-start gap-4 rounded-xl bg-secondary px-4 py-6">
+<div
+  class="bg-secondary flex w-full flex-col items-start gap-4 rounded-lg border border-black/20 bg-white px-4 py-6"
+>
   <div class="flex w-full items-center">
-    <h1 class="text-3xl text-black/80">Masuk</h1>
+    <h1 class="text-2xl">Masuk</h1>
   </div>
 
   <form
     on:submit|preventDefault={signIn}
-    autocomplete="off"
-    class="flex w-full flex-col items-start gap-8"
+    class="contents"
   >
-    <div class="flex w-full flex-col items-start gap-4">
+    <div class="flex w-full flex-col items-start gap-2">
       <Input
         bind:value={username}
         on:input={() => {
@@ -147,10 +149,10 @@
   </form>
 
   <div class="flex w-full items-center justify-center">
-    <p class="text-black/80">
+    <p class="text-black/60">
       Belum punya akun ? <a
         href="/auth/signup"
-        class="underline">Daftar</a
+        class={clsx("text-black/60 underline", "hover:text-black/80")}>Daftar</a
       >
     </p>
   </div>

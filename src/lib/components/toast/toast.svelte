@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { addToasts, toastStore } from "$lib/stores";
-  import clsx from "clsx";
+  import { toastStore } from "$lib/stores";
+  import { clsx } from "clsx";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
   import { Button } from "../button";
@@ -67,13 +67,11 @@
       }}
       class={clsx(
         "relative z-50",
-        "flex w-full flex-col items-start overflow-hidden rounded-lg bg-secondary px-4 py-2 text-black/80",
+        "bg-secondary flex w-full flex-col items-start overflow-hidden rounded-lg px-4 py-2 text-black/80",
         'after:pointer-events-none after:absolute after:inset-0 after:content-[""]',
-        title === "Success"
-          ? "after:bg-green/10"
-          : title === "Warning"
-            ? "after:bg-yellow/10"
-            : "after:bg-red/10",
+        title === "Success" && "after:bg-green/10",
+        title === "Warning" && "after:bg-yellow/10",
+        title === "Error" && "after:bg-red/10",
       )}
     >
       <div class="flex w-full items-center justify-between gap-1">
@@ -83,9 +81,6 @@
 
         <Button
           Icon={X}
-          iconAttr={{
-            size: 20,
-          }}
           variant="ghost"
           on:click={() => {
             removeToast(id);

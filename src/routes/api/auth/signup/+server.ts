@@ -55,10 +55,15 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 
     setCookieAccessToken(cookies, accessToken);
 
-    return json({
-      message: "Berhasil mendaftarkan akun.",
-      data: user,
-    });
+    return json(
+      {
+        message: "Berhasil mendaftarkan akun.",
+        data: user,
+      },
+      {
+        status: 201,
+      },
+    );
   } catch (error) {
     const { responseData, responseInit } = errorHandler(error);
 

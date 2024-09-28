@@ -1,14 +1,16 @@
 <script lang="ts">
   import type { IconComponent } from "$lib/types";
-  import { clsx } from "clsx/lite";
-  import type { IconProps } from "lucide-svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
   import LoaderCircle from "lucide-svelte/icons/loader-circle";
+  import { buttonClass } from "./style";
+  import { twMerge } from "tailwind-merge";
+  import { clsx } from "clsx";
 
   export let state: "idle" | "loading" = "idle";
   export let text: string | undefined = undefined;
+  export let textClass: string | null | undefined = undefined;
   export let Icon: IconComponent | undefined = undefined;
-  export let iconAttr: IconProps | undefined = undefined;
+  export let iconClass: string | null | undefined = undefined;
   export let variant: "default" | "outline" | "ghost" = "default";
   export let attr: HTMLButtonAttributes | undefined = undefined;
 </script>
@@ -17,71 +19,26 @@
   <button
     {...attr}
     on:click
-    class={clsx(
-      "flex items-center justify-center",
-      text && [
-        text && Icon && "gap-2",
-        "h-10 w-full rounded-lg px-4 py-2",
-        variant === "default" && [
-          "bg-black/80 text-white/80",
-          "hover:bg-black/90",
-          "focus:bg-black/90",
-          "focus-visible:bg-black/90",
-          "active:bg-black/90",
-        ],
-        variant === "outline" && [
-          "border border-black/40 bg-transparent text-black/80",
-          "hover:border-black/80",
-          "focus:border-black/80",
-          "focus-visible:border-black/80",
-          "active:border-black/80",
-        ],
-        variant === "ghost" && [
-          "bg-transparent text-black/80",
-          "hover:bg-black/10",
-          "focus:bg-black/10",
-          "focus-visible:bg-black/10",
-          "active:bg-black/10",
-        ],
-      ],
-      !text &&
-        Icon && [
-          "rounded-full p-1",
-          variant === "default" && [
-            "bg-black/80 text-white/80",
-            "hover:bg-black/90",
-            "focus:bg-black/90",
-            "focus-visible:bg-black/90",
-            "active:bg-black/90",
-          ],
-          variant === "outline" && [
-            "border border-black/40 bg-transparent text-black/80",
-            "hover:border-black/80",
-            "focus:border-black/80",
-            "focus-visible:border-black/80",
-            "active:border-black/80",
-          ],
-          variant === "ghost" && [
-            "bg-transparent text-black/80",
-            "hover:bg-black/10",
-            "focus:bg-black/10",
-            "focus-visible:bg-black/10",
-            "active:bg-black/10",
-          ],
-        ],
-      attr && attr.class,
-    )}
+    class={buttonClass(text, Icon, variant, attr?.class)}
     >{#if state === "idle"}
-      {text}
-
       {#if Icon}
-        <Icon
-          size={20}
-          {...iconAttr}
+        <svelte:component
+          this={Icon}
+          class={twMerge(clsx("size-5", iconClass))}
         />
       {/if}
     {:else}
-      <LoaderCircle class="animate-spin" />
+      <LoaderCircle class={twMerge(clsx("size-5 animate-spin", iconClass))} />
+    {/if}
+
+    {#if text}
+      <p class={twMerge(clsx("text-base/[100%]", textClass))}>
+        {#if state === "idle"}
+          {text}
+        {:else}
+          Loading
+        {/if}
+      </p>
     {/if}</button
   >
 {/if}
