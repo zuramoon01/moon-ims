@@ -30,6 +30,8 @@ export function errorHandler(error: unknown) {
     responseData.errorType = error.name;
   }
 
+  console.log(error);
+
   return {
     responseData,
     responseInit,

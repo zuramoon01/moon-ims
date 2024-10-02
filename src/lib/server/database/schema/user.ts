@@ -8,12 +8,12 @@ export const usersTable = pgTable(
   {
     id: uuid("id").notNull(),
     username: varchar("username", {
-      length: 25,
+      length: 32,
     })
       .notNull()
       .unique("users_username_unique"),
     passwordHash: varchar("password_hash", {
-      length: 255,
+      length: 256,
     }).notNull(),
     createdAt: timestamp("created_at", {
       withTimezone: true,

@@ -10,6 +10,8 @@ import {
   setCookieAccessToken,
 } from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
+import { argon2id } from "hash-wasm";
+import { JWT_SECRET } from "$env/static/private";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
@@ -36,10 +38,18 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
       );
     }
 
-    const passwordHash = await Bun.password.hash(password, {
-      algorithm: "argon2id",
-      memoryCost: 4,
-      timeCost: 3,
+    const salt = new Uint8Array(16);
+    crypto.getRandomValues(salt);
+
+    const passwordHash = await argon2id({
+      password,
+      salt,
+      parallelism: 1,
+      iterations: 256,
+      memorySize: 512,
+      hashLength: 32,
+      secret: JWT_SECRET,
+      outputType: "encoded",
     });
 
     const [user] = await insertUser({

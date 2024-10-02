@@ -9,6 +9,8 @@ import {
   setCookieAccessToken,
 } from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
+import { argon2Verify } from "hash-wasm";
+import { JWT_SECRET } from "$env/static/private";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
@@ -28,7 +30,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 
     const user = await getUserByUsename.execute({ username });
 
-    if (!user || !(await Bun.password.verify(password, user.passwordHash))) {
+    if (!user || !(await argon2Verify({ password, hash: user.passwordHash, secret: JWT_SECRET }))) {
       throw new InvalidDataError("Nama atau kata sandi yang dimasukkan salah.");
     }
 
