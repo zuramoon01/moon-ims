@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "bunx --bun vite dev",
-    "build": "bunx --bun vite build",
-    "preview": "bunx --bun vite preview",
+    "build": "vite build",
+    "preview": "vite preview",
     "migration:generate": "bun drizzle-kit generate",
     "migration:run": "bun run ./src/lib/server/database/migration.ts",
     "test": "bun run test:integration && bun run test:unit",
