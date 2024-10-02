@@ -18,8 +18,10 @@
     {...attr}
     on:click
     class={buttonClass(text, Icon, variant, attr?.class)}
-    >{#if state === "idle" && Icon}
-      <Icon class={buttonIconClass(iconClass)} />
+    >{#if state === "idle"}
+      {#if Icon}
+        <Icon class={buttonIconClass(iconClass)} />
+      {/if}
     {:else}
       <LoaderCircle class={buttonIconClass(`animate-spin ${iconClass}`)} />
     {/if}
