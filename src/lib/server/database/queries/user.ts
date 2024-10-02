@@ -1,19 +1,18 @@
-import { db, usersTable } from "$lib/server/database";
 import type { UserTable } from "$lib/types";
-import { eq } from "drizzle-orm";
+import { db, usersTable } from "$lib/server/database";
+import { eq, sql } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 
-export function getUserByUsename(username: UserTable["username"]) {
-  return db
-    .select({
-      id: usersTable.id,
-      username: usersTable.username,
-      passwordHash: usersTable.passwordHash,
-    })
-    .from(usersTable)
-    .where(eq(usersTable.username, username))
-    .limit(1);
-}
+export const getUserByUsename = db.query.usersTable
+  .findFirst({
+    columns: {
+      id: true,
+      username: true,
+      passwordHash: true,
+    },
+    where: eq(usersTable.username, sql.placeholder("username")),
+  })
+  .prepare("getUserByUsename");
 
 export function insertUser(data: Pick<UserTable, "username" | "passwordHash">) {
   return db

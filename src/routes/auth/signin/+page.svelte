@@ -1,15 +1,16 @@
 <script lang="ts">
   import * as v from "valibot";
   import { passwordSchema, usernameSchema } from "$lib/types";
-  import axios, { AxiosError } from "axios";
+  import axios from "axios";
   import { goto } from "$app/navigation";
   import { addToast, user } from "$lib/stores";
+  import { errorHandler } from "$lib/utils";
   import { Button, Input } from "$lib/components";
   import { clsx } from "clsx";
 
   let state: "idle" | "loading" = "idle";
 
-  let controller = new AbortController();
+  let controller: AbortController;
 
   let username = "";
   let usernameErrors: string[] = [];
@@ -48,12 +49,11 @@
 
       if (state === "loading") {
         controller.abort();
-        controller = new AbortController();
       }
 
-      if (state === "idle") {
-        state = "loading";
-      }
+      state = "loading";
+
+      controller = new AbortController();
 
       const { data } = await axios.post(
         "/api/auth/signin",
@@ -74,77 +74,64 @@
       user.set(data.data);
 
       goto("/");
+
+      state = "idle";
     } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response) {
-          const { data, status, headers } = error.response;
+      errorHandler(error);
 
-          addToast({
-            title: "Error",
-            description: data.message,
-          });
-
-          console.log({ data, status, headers });
-        } else if (error.request) {
-          console.log(error.request);
-        } else {
-          console.log("Error", error.message);
-        }
+      if (!axios.isCancel(error)) {
+        state = "idle";
       }
     }
-
-    state = "idle";
   }
 </script>
 
 <div
-  class="bg-secondary flex w-full flex-col items-start gap-4 rounded-lg border border-black/20 bg-white px-4 py-6"
+  class="flex w-full max-w-[25rem] flex-col items-start gap-4 overflow-hidden rounded-lg border border-black/10 bg-white px-4 py-6"
 >
-  <div class="flex w-full items-center">
-    <h1 class="text-2xl">Masuk</h1>
+  <div class="w-full">
+    <h1 class="text-2xl leading-none">Masuk</h1>
   </div>
 
   <form
     on:submit|preventDefault={signIn}
     class="contents"
   >
-    <div class="flex w-full flex-col items-start gap-2">
-      <Input
-        bind:value={username}
-        on:input={() => {
-          validateInput("username");
-        }}
-        label="Nama"
-        errorMessages={usernameErrors}
-        attr={{
-          type: "text",
-          id: "username",
-          name: "username",
-          placeholder: "Masukkan nama",
-          required: true,
-        }}
-      />
+    <Input
+      bind:value={username}
+      on:input={() => {
+        validateInput("username");
+      }}
+      label="Nama"
+      errorMessages={usernameErrors}
+      attr={{
+        type: "text",
+        id: "username",
+        name: "username",
+        placeholder: "Masukkan nama",
+        required: true,
+      }}
+    />
 
-      <Input
-        bind:value={password}
-        on:input={() => {
-          validateInput("password");
-        }}
-        label="Kata Sandi"
-        errorMessages={passwordErrors}
-        attr={{
-          type: "password",
-          id: "password",
-          name: "password",
-          placeholder: "Masukkan kata sandi",
-          required: true,
-        }}
-      />
-    </div>
+    <Input
+      bind:value={password}
+      on:input={() => {
+        validateInput("password");
+      }}
+      label="Kata Sandi"
+      errorMessages={passwordErrors}
+      attr={{
+        type: "password",
+        id: "password",
+        name: "password",
+        placeholder: "Masukkan kata sandi",
+        required: true,
+      }}
+    />
 
     <Button
       state={state}
-      text={"Masuk"}
+      text="Masuk"
     ></Button>
   </form>
 
@@ -152,7 +139,7 @@
     <p class="text-black/60">
       Belum punya akun ? <a
         href="/auth/signup"
-        class={clsx("text-black/60 underline", "hover:text-black/80")}>Daftar</a
+        class={clsx("underline", "hover:text-black/80")}>Daftar</a
       >
     </p>
   </div>

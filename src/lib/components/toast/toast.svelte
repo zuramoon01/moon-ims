@@ -1,10 +1,14 @@
 <script lang="ts">
-  import { toastStore } from "$lib/stores";
+  import {
+    // addToasts,
+    toastStore,
+  } from "$lib/stores";
   import { clsx } from "clsx";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
   import { Button } from "../button";
   import X from "lucide-svelte/icons/x";
+  // import { onMount } from "svelte";
 
   let windowWidth: number;
 
@@ -18,6 +22,26 @@
       destroy() {},
     };
   }
+
+  // onMount(() => {
+  // addToasts([
+  //   {
+  //     title: "Success",
+  //     description: "ok",
+  //     closeDelay: 0,
+  //   },
+  //   {
+  //     title: "Warning",
+  //     description: "ok",
+  //     closeDelay: 0,
+  //   },
+  //   {
+  //     title: "Error",
+  //     description: "ok",
+  //     closeDelay: 0,
+  //   },
+  // ]);
+  // });
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
@@ -26,7 +50,7 @@
   use:portal
   class={clsx(
     $toasts.length === 0 && "pointer-events-none",
-    "fixed right-0 top-0 z-50 flex w-full min-w-80 max-w-[25rem] flex-col items-start gap-2 p-4",
+    "fixed right-0 top-0 z-50 flex w-full max-w-[25rem] flex-col items-start gap-2 p-4",
     "md:bottom-0 md:top-auto",
   )}
 >
@@ -66,8 +90,7 @@
         }
       }}
       class={clsx(
-        "relative z-50",
-        "bg-secondary flex w-full flex-col items-start overflow-hidden rounded-lg px-4 py-2 text-black/80",
+        "relative flex w-full flex-col items-start overflow-hidden rounded-lg bg-white px-4 py-2 text-black/80",
         'after:pointer-events-none after:absolute after:inset-0 after:content-[""]',
         title === "Success" && "after:bg-green/10",
         title === "Warning" && "after:bg-yellow/10",
@@ -75,13 +98,21 @@
       )}
     >
       <div class="flex w-full items-center justify-between gap-1">
-        <h3 id={ids.title}>
+        <h3
+          id={ids.title}
+          class="font-sm font-medium leading-none"
+        >
           {title}
         </h3>
 
         <Button
           Icon={X}
+          iconClass={clsx("size-[1.125rem]")}
           variant="ghost"
+          attr={{
+            type: "button",
+            class: clsx("size-auto p-1"),
+          }}
           on:click={() => {
             removeToast(id);
           }}

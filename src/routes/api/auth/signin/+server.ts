@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 
     const { username, password } = output;
 
-    const [user] = await getUserByUsename(username);
+    const user = await getUserByUsename.execute({ username });
 
     if (!user || !(await Bun.password.verify(password, user.passwordHash))) {
       throw new InvalidDataError("Nama atau kata sandi yang dimasukkan salah.");

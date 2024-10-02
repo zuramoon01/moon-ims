@@ -1,10 +1,8 @@
 <script lang="ts">
   import type { IconComponent } from "$lib/types";
   import type { HTMLButtonAttributes } from "svelte/elements";
+  import { buttonClass, buttonIconClass, buttonTextClass } from "./style";
   import LoaderCircle from "lucide-svelte/icons/loader-circle";
-  import { buttonClass } from "./style";
-  import { twMerge } from "tailwind-merge";
-  import { clsx } from "clsx";
 
   export let state: "idle" | "loading" = "idle";
   export let text: string | undefined = undefined;
@@ -20,24 +18,15 @@
     {...attr}
     on:click
     class={buttonClass(text, Icon, variant, attr?.class)}
-    >{#if state === "idle"}
-      {#if Icon}
-        <svelte:component
-          this={Icon}
-          class={twMerge(clsx("size-5", iconClass))}
-        />
-      {/if}
+    >{#if state === "idle" && Icon}
+      <Icon class={buttonIconClass(iconClass)} />
     {:else}
-      <LoaderCircle class={twMerge(clsx("size-5 animate-spin", iconClass))} />
+      <LoaderCircle class={buttonIconClass(`animate-spin ${iconClass}`)} />
     {/if}
 
     {#if text}
-      <p class={twMerge(clsx("text-base/[100%]", textClass))}>
-        {#if state === "idle"}
-          {text}
-        {:else}
-          Loading
-        {/if}
+      <p class={buttonTextClass(textClass)}>
+        {state === "idle" ? text : "Loading"}
       </p>
     {/if}</button
   >

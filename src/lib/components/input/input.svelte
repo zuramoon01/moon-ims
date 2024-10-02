@@ -2,35 +2,37 @@
   import type { HTMLInputAttributes } from "svelte/elements";
   import { inputClass } from "./style";
 
-  export let value: string = "";
-  export let label: string = "Label text";
+  export let value: string | undefined = undefined;
+  export let label: string | undefined = undefined;
   export let errorMessages: string[] = [];
-  export let attr: Omit<HTMLInputAttributes, "value">;
+  export let attr: HTMLInputAttributes;
 
-  $: hasError = errorMessages.length > 0;
+  $: isError = errorMessages.length > 0;
 </script>
 
-<div class="flex w-full flex-col items-start gap-1">
-  <div class="flex w-full items-center gap-1">
-    <label
-      for={attr.id}
-      class="text-sm font-medium text-black/60">{label}</label
-    >
+<div class="flex w-full flex-col items-start gap-2">
+  {#if label}
+    <div class="w-full text-sm font-medium leading-none">
+      <label
+        for={attr.id}
+        class="text-black/60">{label}</label
+      >
 
-    {#if attr.required}
-      <p class="text-red/60">*</p>
-    {/if}
-  </div>
+      {#if attr.required}
+        <span class="text-red/60">*</span>
+      {/if}
+    </div>
+  {/if}
 
   <input
     {...attr}
     bind:value={value}
     on:input
-    class={inputClass(hasError, attr.class)}
+    class={inputClass(isError, !!attr.disabled, attr.class)}
   />
 
-  {#if hasError}
-    <div class="flex w-full flex-col items-start text-sm text-red/60">
+  {#if isError}
+    <div class="flex w-full flex-col items-start gap-1 text-sm leading-none text-red/60">
       {#each errorMessages as message}
         <p>
           - {message}

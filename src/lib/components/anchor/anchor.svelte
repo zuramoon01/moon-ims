@@ -1,9 +1,7 @@
 <script lang="ts">
   import type { IconComponent } from "$lib/types";
   import type { HTMLAnchorAttributes } from "svelte/elements";
-  import { buttonClass } from "../button";
-  import { twMerge } from "tailwind-merge";
-  import { clsx } from "clsx";
+  import { buttonClass, buttonIconClass, buttonTextClass } from "../button";
 
   export let text: string | undefined = undefined;
   export let textClass: string | null | undefined = undefined;
@@ -21,12 +19,12 @@
     >{#if Icon}
       <svelte:component
         this={Icon}
-        class={twMerge(clsx("size-5", iconClass))}
+        class={buttonIconClass(iconClass)}
       />
     {/if}
 
     {#if text}
-      <p class={twMerge(clsx("text-base/[100%] font-medium", textClass))}>
+      <p class={buttonTextClass(textClass)}>
         {text}
       </p>
     {/if}</a

@@ -1,4 +1,7 @@
 import { pgTable, primaryKey, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { configsTable } from "./config";
+import { productsTable } from "./product";
+import { relations } from "drizzle-orm";
 
 export const usersTable = pgTable(
   "users",
@@ -34,3 +37,10 @@ export const usersTable = pgTable(
     };
   },
 );
+
+export const usersRelations = relations(usersTable, ({ one, many }) => {
+  return {
+    config: one(configsTable),
+    products: many(productsTable),
+  };
+});
