@@ -1,7 +1,6 @@
-import type { RequestHandler } from "./$types";
-import * as v from "valibot";
-import { passwordSchema, usernameSchema } from "$lib/types";
-import { insertUser } from "$lib/server/database";
+import { JWT_SECRET } from "$env/static/private";
+import { confirmPasswordSchema, passwordSchema, usernameSchema } from "$lib/features/user";
+import { insertUser } from "$lib/server/features/user";
 import {
   createAccessToken,
   DuplicateUserError,
@@ -11,7 +10,8 @@ import {
 } from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
 import { argon2id } from "hash-wasm";
-import { JWT_SECRET } from "$env/static/private";
+import * as v from "valibot";
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
@@ -19,7 +19,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
       v.object({
         username: usernameSchema,
         password: passwordSchema,
-        confirmPassword: passwordSchema,
+        confirmPassword: confirmPasswordSchema,
       }),
       await request.json(),
     );

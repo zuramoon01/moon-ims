@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { user } from "$lib/features/user";
+  import { Toast } from "$lib/ui";
   import type { LayoutServerData } from "./$types";
-  import { user } from "$lib/stores";
-  import { Toast } from "$lib/components";
 
   import "../app.css";
 

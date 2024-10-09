@@ -1,7 +1,6 @@
-import type { RequestHandler } from "./$types";
-import * as v from "valibot";
-import { passwordSchema, usernameSchema } from "$lib/types";
-import { getUserByUsename } from "$lib/server/database";
+import { JWT_SECRET } from "$env/static/private";
+import { passwordSchema, usernameSchema } from "$lib/features/user";
+import { getUserByUsename } from "$lib/server/features/user";
 import {
   createAccessToken,
   errorHandler,
@@ -10,7 +9,8 @@ import {
 } from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
 import { argon2Verify } from "hash-wasm";
-import { JWT_SECRET } from "$env/static/private";
+import * as v from "valibot";
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
   try {
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
 
     const { username, password } = output;
 
-    const user = await getUserByUsename.execute({ username });
+    const [user] = await getUserByUsename(username);
 
     if (!user || !(await argon2Verify({ password, hash: user.passwordHash, secret: JWT_SECRET }))) {
       throw new InvalidDataError("Nama atau kata sandi yang dimasukkan salah.");

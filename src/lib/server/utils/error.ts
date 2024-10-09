@@ -1,3 +1,5 @@
+import { HttpStatusCode } from "axios";
+
 export class DuplicateUserError extends Error {
   constructor(message: string) {
     super(message);
@@ -12,6 +14,14 @@ export class InvalidDataError extends Error {
   }
 }
 
+export class UnauthorizedError extends Error {
+  constructor() {
+    super();
+    this.message = "Unauthorized";
+    this.name = "UnauthorizedError";
+  }
+}
+
 export function errorHandler(error: unknown) {
   const responseData: {
     message: string;
@@ -22,12 +32,20 @@ export function errorHandler(error: unknown) {
   };
 
   const responseInit: ResponseInit | undefined = {
-    status: 400,
+    status: HttpStatusCode.BadRequest,
   };
 
-  if (error instanceof DuplicateUserError || error instanceof InvalidDataError) {
+  if (
+    error instanceof DuplicateUserError ||
+    error instanceof InvalidDataError ||
+    error instanceof UnauthorizedError
+  ) {
     responseData.message = error.message;
     responseData.errorType = error.name;
+  }
+
+  if (error instanceof UnauthorizedError) {
+    responseInit.status = HttpStatusCode.Unauthorized;
   }
 
   console.log(error);

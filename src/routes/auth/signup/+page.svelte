@@ -1,12 +1,11 @@
 <script lang="ts">
-  import * as v from "valibot";
-  import { confirmPasswordSchema, passwordSchema, usernameSchema } from "$lib/types";
-  import axios from "axios";
   import { goto } from "$app/navigation";
-  import { addToast, user } from "$lib/stores";
+  import { confirmPasswordSchema, passwordSchema, user, usernameSchema } from "$lib/features/user";
+  import { addToast, Button, Input } from "$lib/ui";
   import { errorHandler } from "$lib/utils";
-  import { Button, Input } from "$lib/components";
+  import axios from "axios";
   import { clsx } from "clsx";
+  import * as v from "valibot";
 
   let state: "idle" | "loading" = "idle";
 

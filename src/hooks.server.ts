@@ -1,14 +1,11 @@
-import type { Handle } from "@sveltejs/kit";
 import { verifyAccessToken } from "$lib/server/utils";
+import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const { cookies, locals } = event;
 
   const accessToken = cookies.get("access_token");
-
-  if (accessToken) {
-    locals.user = verifyAccessToken(accessToken);
-  }
+  locals.user = accessToken ? verifyAccessToken(accessToken) : null;
 
   const response = await resolve(event);
 

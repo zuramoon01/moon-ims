@@ -1,5 +1,5 @@
-import type { Cookies } from "@sveltejs/kit";
 import { dev } from "$app/environment";
+import type { Cookies } from "@sveltejs/kit";
 
 export function setCookieAccessToken(cookies: Cookies, token: string) {
   cookies.set("access_token", token, {

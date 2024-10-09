@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "$env/static/private";
+import { usernameSchema, uuidSchema, type User } from "$lib/features/user";
+import jwt from "jsonwebtoken";
 import * as v from "valibot";
-import { usernameSchema, uuidSchema, type User } from "$lib/types";
 
 export function createAccessToken(payload: User) {
   return jwt.sign(payload, JWT_SECRET, {

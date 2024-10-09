@@ -1,5 +1,5 @@
+import { addToast } from "$lib/ui";
 import { AxiosError } from "axios";
-import { addToast } from "$lib/stores";
 
 export function errorHandler(error: unknown) {
   if (error instanceof AxiosError) {
