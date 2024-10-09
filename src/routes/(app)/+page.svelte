@@ -169,7 +169,7 @@
         {/each}
       </div>
 
-      {#each products as { id, name, quantity, availability } (id)}
+      {#each products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
         <div class="flex w-full gap-[1px] text-sm">
           <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}></div>
           <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
@@ -191,16 +191,16 @@
             </div>
           </div>
           <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
-            Rp 8.500,00
+            {buyPrice}
           </div>
           <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
-            Rp 93.500,00
+            {totalBuyPrice}
           </div>
           <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
-            Rp 15.000,00
+            {sellPrice}
           </div>
           <div class={clsx(productTableColumnBaseClass, productTableTitles[7].classes)}>
-            Rp 165.000,00
+            {totalSellPrice}
           </div>
         </div>
       {/each}

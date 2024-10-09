@@ -25,8 +25,6 @@ export const GET: RequestHandler = async ({ locals, url: { searchParams } }) => 
       getTotalProduct(locals.user.id),
     ]);
 
-    console.log(products, totalProduct);
-
     const total = totalProduct.length === 1 ? Number(totalProduct[0]?.total) : 0;
 
     // Cari produk dengan mengurangi page selama total produk tidak sama dengan 0 dan produk tidak ditemukan

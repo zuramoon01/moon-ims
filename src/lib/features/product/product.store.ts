@@ -1,4 +1,6 @@
-import type { ProductStore } from "$lib/features/product";
+import type { Product, ProductStore } from "$lib/features/product";
+import type { PaginationConfig } from "$lib/types";
+import { rupiahCurrency } from "$lib/utils";
 import { writable } from "svelte/store";
 
 export const productTableColumnBaseClass = "flex min-h-9 shrink-0 items-center bg-white px-4 py-2";
@@ -58,8 +60,21 @@ const createProductStore = () => {
     },
   });
 
-  function setProductStore(data: ProductStore) {
-    set(data);
+  function setProductStore(data: { products: Product[]; config: PaginationConfig }) {
+    set({
+      ...data,
+      products: data.products.map(
+        ({ buyPrice, totalBuyPrice, sellPrice, totalSellPrice, ...product }) => {
+          return {
+            ...product,
+            buyPrice: rupiahCurrency.format(buyPrice),
+            totalBuyPrice: rupiahCurrency.format(totalBuyPrice),
+            sellPrice: rupiahCurrency.format(sellPrice),
+            totalSellPrice: rupiahCurrency.format(totalSellPrice),
+          };
+        },
+      ),
+    });
   }
 
   return {
