@@ -58,7 +58,9 @@
       class="contents"
     >
       <h1 class="text-nowrap text-xl font-semibold leading-none">Moon IMS</h1>
-      <p class="text-sm leading-none text-black/60">Toko Bangunan Dayat</p></a
+      {#if $user?.companyName}
+        <p class="text-sm leading-none text-black/60">{$user.companyName}</p>
+      {/if}</a
     >
   </div>
 

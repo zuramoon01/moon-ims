@@ -4,6 +4,6 @@ import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = ({ locals }) => {
   if (locals.user) {
-    redirect(HttpStatusCode.TemporaryRedirect, "/auth/signin");
+    redirect(HttpStatusCode.TemporaryRedirect, "/");
   }
 };

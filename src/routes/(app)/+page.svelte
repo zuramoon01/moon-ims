@@ -117,96 +117,96 @@
   <Header bind:headerHeight={headerHeight} />
 
   <main
-    class="flex w-full grow flex-col items-start overflow-hidden rounded-lg border border-black/10 p-4"
+    class="flex w-full grow flex-col items-start justify-between overflow-hidden rounded-lg border border-black/10 p-4"
   >
-    <div
-      bind:clientHeight={productTableTitleHeight}
-      class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-4"
-    >
-      <div class="flex items-center gap-2">
-        <h2 class="text-2xl font-semibold leading-none">Produk</h2>
+    <div class="flex w-full flex-col items-start gap-4">
+      <div
+        bind:clientHeight={productTableTitleHeight}
+        class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2"
+      >
+        <div class="flex items-center gap-2">
+          <h2 class="text-2xl font-semibold leading-none">Produk</h2>
 
-        <div
-          class="leadin-none rounded-[0.25rem] bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums"
-        >
-          {total}
+          <div
+            class="leadin-none rounded-[0.25rem] bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums"
+          >
+            {total}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <Button
+            Icon={Filter}
+            iconClass={clsx("size-[1.125rem]")}
+            attr={{
+              type: "button",
+              class: clsx("rounded-[0.25rem] size-9"),
+            }}
+          />
+
+          <Button
+            text="Tambah Produk"
+            textClass={clsx("text-sm font-semibold leading-none")}
+            attr={{
+              type: "button",
+              class: clsx("w-auto h-9"),
+            }}
+          />
         </div>
       </div>
 
-      <div class="flex items-center gap-4">
-        <Button
-          Icon={Filter}
-          iconClass={clsx("size-[1.125rem]")}
-          attr={{
-            type: "button",
-            class: clsx("rounded-[0.25rem] size-9"),
-          }}
-        />
-
-        <Button
-          text="Tambah Produk"
-          textClass={clsx("text-sm font-semibold leading-none")}
-          attr={{
-            type: "button",
-            class: clsx("w-auto h-9"),
-          }}
-        />
-      </div>
-    </div>
-
-    <div
-      class="product-data scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
-      style={`
+      <div
+        class="product-data scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
+        style={`
         --headerHeight: ${headerHeight}px;
         --productTableTitleHeight: ${productTableTitleHeight}px;
         --productTableInfoHeight: ${productTableInfoHeight}px;
         --navMobileHeight: ${navMobileHeight}px;
       `}
-    >
-      <div class="flex w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
-        {#each productTableTitles as { name, classes }}
-          <div class={clsx(productTableColumnBaseClass, classes)}>{name}</div>
-        {/each}
-      </div>
+      >
+        <div class="flex w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
+          {#each productTableTitles as { name, classes }}
+            <div class={clsx(productTableColumnBaseClass, classes)}>{name}</div>
+          {/each}
+        </div>
 
-      {#each products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
-        <div class="flex w-full gap-[1px] text-sm">
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}></div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
-            {name}
-          </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[2].classes)}>
-            {quantity}
-          </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[3].classes)}>
-            <div
-              class={clsx(
-                "flex items-center justify-center rounded-[0.25rem] px-4 py-1",
-                availability === "Tersedia" && "bg-green/60",
-                availability === "Sedikit" && "bg-yellow/60",
-                availability === "Tidak Tersedia" && "bg-red/60",
-              )}
-            >
-              {availability}
+        {#each products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
+          <div class="flex w-full gap-[1px] text-sm">
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}></div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
+              {name}
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[2].classes)}>
+              {quantity}
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[3].classes)}>
+              <div
+                class={clsx(
+                  "flex items-center justify-center rounded-[0.25rem] px-4 py-1",
+                  availability === "Tersedia" && "bg-green/60",
+                  availability === "Sedikit" && "bg-yellow/60",
+                  availability === "Tidak Tersedia" && "bg-red/60",
+                )}
+              >
+                {availability}
+              </div>
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
+              {buyPrice}
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
+              {totalBuyPrice}
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
+              {sellPrice}
+            </div>
+            <div class={clsx(productTableColumnBaseClass, productTableTitles[7].classes)}>
+              {totalSellPrice}
             </div>
           </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
-            {buyPrice}
-          </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
-            {totalBuyPrice}
-          </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
-            {sellPrice}
-          </div>
-          <div class={clsx(productTableColumnBaseClass, productTableTitles[7].classes)}>
-            {totalSellPrice}
-          </div>
-        </div>
-      {/each}
+        {/each}
+      </div>
     </div>
-
-    <div class="flex-1"></div>
 
     <div
       bind:clientHeight={productTableInfoHeight}
@@ -315,14 +315,15 @@
   /*
     Height Calculation
     // 100dvh = Ukuran yang bisa dicakup browser
-    // 5.5rem / 6.5rem Jarak yang memisahkan tiap elemen header, product table title, product table info, dan nav mobile
+    // 2px adalah ukuran tambahan untuk border dan + 2px diakhir adalah border dari produk
+    // 6rem / 7rem Jarak yang memisahkan tiap elemen header, product table title, product table info, dan nav mobile
   */
   .product-data {
     max-height: calc(
       100dvh -
         (
-          var(--headerHeight) + var(--productTableTitleHeight) + var(--productTableInfoHeight) +
-            var(--navMobileHeight) + 6.5rem
+          var(--headerHeight) + 2px + var(--productTableTitleHeight) + var(--productTableInfoHeight) +
+            2px + var(--navMobileHeight) + 2px + 7rem + 2px
         )
     );
   }
@@ -332,8 +333,8 @@
       max-height: calc(
         100dvh -
           (
-            var(--headerHeight) + var(--productTableTitleHeight) + var(--productTableInfoHeight) +
-              5.5rem
+            var(--headerHeight) + 2px + var(--productTableTitleHeight) +
+              var(--productTableInfoHeight) + 2px + 6rem + 2px
           )
       );
     }

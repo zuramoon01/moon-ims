@@ -19,3 +19,5 @@ export const confirmPasswordSchema = v.pipe(
   v.minLength(8, "Konfimasi kata sandi minimal 8 karakter."),
   v.maxLength(255, "Konfimasi kata sandi maksimal 255 karakter."),
 );
+
+export const companyNameSchema = v.nullable(v.string());

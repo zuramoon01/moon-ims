@@ -37,6 +37,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     const userData = {
       id: user.id,
       username: user.username,
+      companyName: user.companyName,
     };
 
     const accessToken = createAccessToken(userData);

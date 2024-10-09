@@ -1,5 +1,5 @@
 import { JWT_SECRET } from "$env/static/private";
-import { usernameSchema, uuidSchema, type User } from "$lib/features/user";
+import { companyNameSchema, usernameSchema, uuidSchema, type User } from "$lib/features/user";
 import jwt from "jsonwebtoken";
 import * as v from "valibot";
 
@@ -15,6 +15,7 @@ export function verifyAccessToken(token: string) {
       v.object({
         id: uuidSchema,
         username: usernameSchema,
+        companyName: companyNameSchema,
       }),
       jwt.verify(token, JWT_SECRET),
     );
