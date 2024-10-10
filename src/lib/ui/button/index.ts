@@ -1,2 +1,3 @@
+export * from "./button.style";
 export { default as Button } from "./button.svelte";
-export * from "./style";
+export * from "./button.type";

@@ -13,6 +13,7 @@
   "svelteAllowShorthand": false,
   "svelteStrictMode": false,
 
+  "tailwindFunctions": ["twMerge", "clsx"],
   "tailwindPreserveDuplicates": true,
   "tailwindPreserveWhitespace": false,
 

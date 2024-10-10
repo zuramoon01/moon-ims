@@ -1,6 +1,7 @@
 // UI
 export * from "./anchor";
 export * from "./button";
+export * from "./checkbox";
 export * from "./input";
 export * from "./toast";
 
@@ -9,4 +10,4 @@ export * from "./header";
 export * from "./nav";
 
 // Type
-export * from "./ui.type";
+export * from "./type";

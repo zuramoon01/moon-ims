@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/ui";
-  import { clsx } from "clsx";
+  import clsx from "clsx";
   import X from "lucide-svelte/icons/x";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
@@ -90,7 +90,7 @@
         }
       }}
       class={clsx(
-        "relative flex w-full flex-col items-start overflow-hidden rounded-lg bg-white px-4 py-2 text-black/80",
+        "relative flex w-full flex-col items-start overflow-hidden rounded-lg bg-white px-4 py-2",
         'after:pointer-events-none after:absolute after:inset-0 after:content-[""]',
         title === "Success" && "after:bg-green/10",
         title === "Warning" && "after:bg-yellow/10",
@@ -111,7 +111,7 @@
           variant="ghost"
           attr={{
             type: "button",
-            class: clsx("size-auto p-1"),
+            class: clsx("size-auto p-1 shrink-0"),
           }}
           on:click={() => {
             removeToast(id);

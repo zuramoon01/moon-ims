@@ -4,7 +4,7 @@
   import { addToast, Button, Input } from "$lib/ui";
   import { errorHandler } from "$lib/utils";
   import axios from "axios";
-  import { clsx } from "clsx";
+  import clsx from "clsx";
   import * as v from "valibot";
 
   let state: "idle" | "loading" = "idle";
@@ -107,7 +107,7 @@
         type: "text",
         id: "username",
         name: "username",
-        placeholder: "Masukkan nama",
+        placeholder: "Nama akun",
         required: true,
       }}
     />
@@ -123,7 +123,7 @@
         type: "password",
         id: "password",
         name: "password",
-        placeholder: "Masukkan kata sandi",
+        placeholder: "Kata sandi",
         required: true,
       }}
     />
@@ -131,7 +131,7 @@
     <Button
       state={state}
       text="Masuk"
-    ></Button>
+    />
   </form>
 
   <div class="flex w-full items-center justify-center">

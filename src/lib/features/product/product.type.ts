@@ -1,4 +1,5 @@
 import type { PaginationConfig } from "$lib/types";
+import type { CheckboxState } from "$lib/ui";
 
 export interface ProductTable {
   id: number;
@@ -37,6 +38,10 @@ export interface FormattedProduct
 }
 
 export interface ProductStore {
-  products: FormattedProduct[];
+  products: Map<FormattedProduct["id"], FormattedProduct>;
   config: PaginationConfig;
+  table: {
+    state: CheckboxState;
+    products: Map<FormattedProduct["id"], true>;
+  };
 }

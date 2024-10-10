@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
-  import { inputClass } from "./style";
+  import { inputClass } from "./input.style";
 
   export let value: string | undefined = undefined;
   export let label: string | undefined = undefined;

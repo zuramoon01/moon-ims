@@ -4,7 +4,7 @@
   import { addToast, Button, Input } from "$lib/ui";
   import { errorHandler } from "$lib/utils";
   import axios from "axios";
-  import { clsx } from "clsx";
+  import clsx from "clsx";
   import * as v from "valibot";
 
   let state: "idle" | "loading" = "idle";
@@ -120,7 +120,7 @@
         type: "text",
         id: "username",
         name: "username",
-        placeholder: "Masukkan nama",
+        placeholder: "Nama akun",
         required: true,
       }}
     />
@@ -136,7 +136,7 @@
         type: "password",
         id: "password",
         name: "password",
-        placeholder: "Masukkan kata sandi",
+        placeholder: "Kata sandi",
         required: true,
       }}
     />
@@ -152,7 +152,7 @@
         type: "password",
         id: "confirmPassword",
         name: "confirmPassword",
-        placeholder: "Masukkan konfirmasi kata sandi",
+        placeholder: "Konfirmasi kata sandi",
         required: true,
       }}
     />

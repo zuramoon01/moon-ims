@@ -1,11 +1,11 @@
-import type { Product } from "$lib/features/product";
+import type { PriceTable, Product, ProductTable } from "$lib/features/product";
 import type { UserTable } from "$lib/features/user";
 import { sql } from "$lib/server/database";
 
 export function getTotalProduct(userId: UserTable["id"]) {
-  return sql<[{ total: string }]>`
+  return sql<[{ total: number }]>`
     SELECT
-      COUNT(*) AS total 
+      COUNT(*)::integer AS total 
     FROM products
       INNER JOIN prices ON prices.product_id = products.id
     WHERE
@@ -50,5 +50,33 @@ export function getProducts({
     ORDER BY created_at DESC
     LIMIT ${limit}
     OFFSET ${offset}
+  `;
+}
+
+export function addProduct({
+  userId,
+  name,
+  quantity,
+  buyPrice,
+  sellPrice,
+}: {
+  userId: UserTable["id"];
+  name: ProductTable["name"];
+  quantity: ProductTable["quantity"];
+  buyPrice: PriceTable["buyPrice"];
+  sellPrice: PriceTable["sellPrice"];
+}) {
+  console.log(userId);
+
+  return sql`
+    WITH new_product AS
+      (
+        INSERT INTO products
+          (user_id, name, quantity)
+        VALUES (${userId}, ${name}, ${quantity})
+        RETURNING id
+      )
+    INSERT INTO prices (product_id, buy_price, sell_price)
+    VALUES ((SELECT new_product.id FROM new_product), ${buyPrice}, ${sellPrice})
   `;
 }

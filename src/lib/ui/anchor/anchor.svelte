@@ -1,12 +1,19 @@
 <script lang="ts">
-  import { buttonClass, buttonIconClass, buttonTextClass, type IconComponent } from "$lib/ui";
+  import {
+    buttonClass,
+    buttonIconClass,
+    buttonTextClass,
+    type ButtonVariant,
+    type Class,
+    type IconComponent,
+  } from "$lib/ui";
   import type { HTMLAnchorAttributes } from "svelte/elements";
 
   export let text: string | undefined = undefined;
-  export let textClass: string | null | undefined = undefined;
+  export let textClass: Class = undefined;
   export let Icon: IconComponent | undefined = undefined;
-  export let iconClass: string | null | undefined = undefined;
-  export let variant: "default" | "outline" | "ghost" = "default";
+  export let iconClass: Class = undefined;
+  export let variant: ButtonVariant = "default";
   export let attr: HTMLAnchorAttributes | undefined = undefined;
 </script>
 

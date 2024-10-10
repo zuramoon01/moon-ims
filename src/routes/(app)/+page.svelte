@@ -2,11 +2,12 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import {
+    AddProduct,
     productStore,
     productTableColumnBaseClass,
     productTableTitles,
   } from "$lib/features/product";
-  import { Button, Header, NavMobile } from "$lib/ui";
+  import { Button, Checkbox, Header, NavMobile } from "$lib/ui";
   import { errorHandler } from "$lib/utils";
   import axios from "axios";
   import { clsx } from "clsx";
@@ -15,10 +16,8 @@
   import Filter from "lucide-svelte/icons/filter";
   import { onMount, tick } from "svelte";
 
-  $: ({
-    products,
-    config: { currentPage, totalPage, from, to, limit, total },
-  } = $productStore);
+  $: ({ products, config, table, setProductStore, updateTableState } = productStore);
+  $: ({ currentPage, totalPage, from, to, limit, total } = $config);
 
   let headerHeight = 0;
   let navMobileHeight = 0;
@@ -47,7 +46,7 @@
 
       const { data } = await axios.get(`/api/products?${searchParamsUrl}`);
 
-      productStore.setProductStore(data.data);
+      setProductStore(data.data);
 
       await tick();
 
@@ -127,11 +126,13 @@
         <div class="flex items-center gap-2">
           <h2 class="text-2xl font-semibold leading-none">Produk</h2>
 
-          <div
-            class="leadin-none rounded-[0.25rem] bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums"
-          >
-            {total}
-          </div>
+          {#if $products.length > 0}
+            <div
+              class="leadin-none rounded bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums"
+            >
+              {total}
+            </div>
+          {/if}
         </div>
 
         <div class="flex items-center gap-4">
@@ -140,172 +141,191 @@
             iconClass={clsx("size-[1.125rem]")}
             attr={{
               type: "button",
-              class: clsx("rounded-[0.25rem] size-9"),
+              class: clsx("rounded size-9"),
             }}
           />
 
-          <Button
-            text="Tambah Produk"
-            textClass={clsx("text-sm font-semibold leading-none")}
-            attr={{
-              type: "button",
-              class: clsx("w-auto h-9"),
-            }}
-          />
+          <AddProduct />
         </div>
       </div>
 
-      <div
-        class="product-data scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
-        style={`
-        --headerHeight: ${headerHeight}px;
-        --productTableTitleHeight: ${productTableTitleHeight}px;
-        --productTableInfoHeight: ${productTableInfoHeight}px;
-        --navMobileHeight: ${navMobileHeight}px;
-      `}
-      >
-        <div class="flex w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
-          {#each productTableTitles as { name, classes }}
-            <div class={clsx(productTableColumnBaseClass, classes)}>{name}</div>
-          {/each}
-        </div>
+      {#if $products.length > 0}
+        <div
+          class="product-data scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
+          style={`
+            --headerHeight: ${headerHeight}px;
+            --productTableTitleHeight: ${productTableTitleHeight}px;
+            --productTableInfoHeight: ${productTableInfoHeight}px;
+            --navMobileHeight: ${navMobileHeight}px;
+          `}
+        >
+          <div class="flex w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
+            <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
+              <Checkbox
+                state={$table.state}
+                onChange={() => {
+                  updateTableState({ type: "group" });
+                }}
+              />
+            </div>
 
-        {#each products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
-          <div class="flex w-full gap-[1px] text-sm">
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}></div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
-              {name}
-            </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[2].classes)}>
-              {quantity}
-            </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[3].classes)}>
-              <div
-                class={clsx(
-                  "flex items-center justify-center rounded-[0.25rem] px-4 py-1",
-                  availability === "Tersedia" && "bg-green/60",
-                  availability === "Sedikit" && "bg-yellow/60",
-                  availability === "Tidak Tersedia" && "bg-red/60",
-                )}
-              >
-                {availability}
+            {#each productTableTitles as { name, classes }}
+              <div class={clsx(productTableColumnBaseClass, classes)}>{name}</div>
+            {/each}
+          </div>
+
+          {#each $products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
+            <div class="flex w-full gap-[1px] text-sm">
+              <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
+                <Checkbox
+                  state={$table.products.has(id) ? "true" : "false"}
+                  onChange={() => {
+                    updateTableState({ type: "single", productId: id });
+                  }}
+                />
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}>
+                {name}
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
+                {quantity}
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[2].classes)}>
+                <div
+                  class={clsx(
+                    "flex items-center justify-center rounded px-4 py-1",
+                    availability === "Tersedia" && "bg-green/60",
+                    availability === "Sedikit" && "bg-yellow/60",
+                    availability === "Tidak Tersedia" && "bg-red/60",
+                  )}
+                >
+                  {availability}
+                </div>
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[3].classes)}>
+                {buyPrice}
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
+                {totalBuyPrice}
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
+                {sellPrice}
+              </div>
+              <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
+                {totalSellPrice}
               </div>
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
-              {buyPrice}
-            </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
-              {totalBuyPrice}
-            </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
-              {sellPrice}
-            </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[7].classes)}>
-              {totalSellPrice}
-            </div>
-          </div>
-        {/each}
-      </div>
+          {/each}
+        </div>
+      {:else}
+        <div class="flex w-full items-center justify-center">
+          <p>Anda belum memiliki produk.</p>
+        </div>
+      {/if}
     </div>
 
-    <div
-      bind:clientHeight={productTableInfoHeight}
-      class="scrollbar-hide flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 overflow-x-auto rounded-[0.25rem] border border-black/10 px-4 py-2"
-    >
-      <form
-        on:submit|preventDefault={updateLimit}
-        class="flex items-center gap-2"
+    {#if $products.length > 0}
+      <div
+        bind:clientHeight={productTableInfoHeight}
+        class="scrollbar-hide flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 overflow-x-auto rounded border border-black/10 px-4 py-2"
       >
-        <input
-          type="number"
-          value={inputLimit}
-          on:input={(e) => {
-            inputLimit = e.currentTarget.valueAsNumber;
-          }}
-          class={clsx(
-            "h-8 w-12 rounded-[0.25rem] border border-black/60 bg-white px-2 text-center text-sm font-medium tabular-nums leading-none text-black/60 outline-none",
-
-            "placeholder:text-black/20",
-            "placeholder-shown:border-black/20",
-
-            "hover:border-blue/40",
-            "focus:border-blue/40",
-            "focus-visible:border-blue/40",
-            "active:border-blue/40",
-          )}
-        />
-
-        <div class="flex flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none">
-          <p>Produk Per Halaman</p>
-          <p>[ {from} - {to} ]</p>
-        </div>
-      </form>
-
-      <div class="flex items-center gap-4">
-        <Button
-          Icon={ChevronLeft}
-          iconClass={clsx("size-6")}
-          variant="outline"
-          attr={{
-            type: "button",
-            class: clsx("shrink-0 rounded-[0.25rem] border h-8 w-12"),
-          }}
-          on:click={() => {
-            updateCurrentPage("previous");
-          }}
-        />
-
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <form
-          on:submit|preventDefault={() => {
-            updateCurrentPage("input");
-          }}
-          on:click={() => {
-            inputPageElement.focus();
-          }}
-          class={clsx(
-            "flex h-8 shrink-0 cursor-text items-center gap-1 rounded-[0.25rem] border border-black/60 bg-white px-2 text-black/60",
-
-            "placeholder:text-black/20",
-            "placeholder-shown:border-black/20",
-
-            "hover:border-blue/40",
-            "focus:border-blue/40",
-            "focus-visible:border-blue/40",
-            "active:border-blue/40",
-          )}
+          on:submit|preventDefault={updateLimit}
+          class="flex items-center gap-2"
         >
           <input
-            bind:this={inputPageElement}
             type="number"
-            value={inputPage}
+            value={inputLimit}
             on:input={(e) => {
-              inputPage = e.currentTarget.valueAsNumber;
+              inputLimit = e.currentTarget.valueAsNumber;
             }}
-            style:width={`${(!isNaN(inputPage) ? inputPage.toString().length : 1) * 0.5625}rem`}
-            class="bg-transparent text-center text-sm font-medium tabular-nums leading-none outline-none"
+            class={clsx(
+              "h-8 w-12 rounded border border-black/60 bg-white px-2 text-center text-sm font-medium tabular-nums leading-none text-black/60 outline-none",
+
+              "placeholder:text-black/20",
+              "placeholder-shown:border-black/20",
+
+              "hover:border-blue/40",
+              "focus:border-blue/40",
+              "focus-visible:border-blue/40",
+              "active:border-blue/40",
+            )}
           />
 
-          <p class="text-sm font-medium tabular-nums leading-none">
-            / {totalPage}
-          </p>
+          <div
+            class="flex flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none"
+          >
+            <p>Produk Per Halaman</p>
+            <p class="tabular-nums">[ {from} - {to} ]</p>
+          </div>
         </form>
 
-        <Button
-          Icon={ChevronRight}
-          iconClass={clsx("size-6")}
-          variant="outline"
-          attr={{
-            type: "button",
-            class: clsx("shrink-0 rounded-[0.25rem] border h-8 w-12"),
-          }}
-          on:click={() => {
-            updateCurrentPage("next");
-          }}
-        />
+        <div class="flex items-center gap-4">
+          <Button
+            Icon={ChevronLeft}
+            iconClass={clsx("size-6")}
+            variant="outline"
+            attr={{
+              type: "button",
+              class: clsx("shrink-0 rounded border h-8 w-12"),
+            }}
+            on:click={() => {
+              updateCurrentPage("previous");
+            }}
+          />
+
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+          <form
+            on:submit|preventDefault={() => {
+              updateCurrentPage("input");
+            }}
+            on:click={() => {
+              inputPageElement.focus();
+            }}
+            class={clsx(
+              "flex h-8 shrink-0 cursor-text items-center gap-1 rounded border border-black/60 bg-white px-2 text-sm font-medium tabular-nums leading-none text-black/60",
+
+              "placeholder:text-black/20",
+              "placeholder-shown:border-black/20",
+
+              "hover:border-blue/40",
+              "focus:border-blue/40",
+              "focus-visible:border-blue/40",
+              "active:border-blue/40",
+            )}
+          >
+            <input
+              bind:this={inputPageElement}
+              type="number"
+              value={inputPage}
+              on:input={(e) => {
+                inputPage = e.currentTarget.valueAsNumber;
+              }}
+              style:width={`${(!isNaN(inputPage) ? inputPage.toString().length : 1) * 0.5625}rem`}
+              class="bg-transparent text-center outline-none"
+            />
+
+            <span>/</span>
+
+            <p>{totalPage}</p>
+          </form>
+
+          <Button
+            Icon={ChevronRight}
+            iconClass={clsx("size-6")}
+            variant="outline"
+            attr={{
+              type: "button",
+              class: clsx("shrink-0 rounded border h-8 w-12"),
+            }}
+            on:click={() => {
+              updateCurrentPage("next");
+            }}
+          />
+        </div>
       </div>
-    </div>
+    {/if}
   </main>
 
   <NavMobile bind:navMobileHeight={navMobileHeight} />

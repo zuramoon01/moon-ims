@@ -1,4 +1,4 @@
-import type { User } from "$lib/types";
+import type { User } from "$lib/features/user";
 
 declare global {
   namespace App {

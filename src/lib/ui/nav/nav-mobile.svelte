@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { navs } from "$lib/stores";
-  import { clsx } from "clsx";
+  import clsx from "clsx";
 
   export let navMobileHeight: number;
 </script>

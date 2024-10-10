@@ -1,12 +1,12 @@
 import type { Class } from "$lib/ui";
-import { clsx } from "clsx";
+import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function inputClass(isError: boolean, isDisabled: boolean, classes: Class) {
   return twMerge(
     clsx(
       // Base
-      "w-full h-10 rounded-[0.25rem] border px-4 py-2 bg-white outline-none",
+      "h-10 w-full rounded border bg-white px-4 py-2 outline-none",
 
       !isDisabled
         ? [
@@ -35,7 +35,7 @@ export function inputClass(isError: boolean, isDisabled: boolean, classes: Class
           ]
         : [
             // Disabled
-            "disabled:border-black/10 disabled:bg-black/10 disabled:text-black/40 disabled:cursor-not-allowed",
+            "disabled:cursor-not-allowed disabled:border-black/10 disabled:bg-black/10 disabled:text-black/40",
 
             // Disabled Placeholder
             "disabled:placeholder:text-black/20",
