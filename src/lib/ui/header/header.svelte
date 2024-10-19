@@ -3,10 +3,10 @@
   import { user } from "$lib/features/user";
   import { navs } from "$lib/stores";
   import { addToast, Anchor, Button } from "$lib/ui";
-  import { errorHandler } from "$lib/utils";
+  import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import LogOut from "lucide-svelte/icons/log-out";
+  import { LogOut } from "lucide-svelte";
 
   export let headerHeight: number;
 
@@ -39,7 +39,7 @@
 
       state = "idle";
     } catch (error) {
-      errorHandler(error);
+      clientErrorHandler(error);
 
       if (!axios.isCancel(error)) {
         state = "idle";

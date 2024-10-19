@@ -1,8 +1,14 @@
-import { buyPriceSchema, nameSchema, quantitySchema, sellPriceSchema } from "$lib/features/product";
-import { addProduct, getPagination, getProductsWithConfig } from "$lib/server/features/product";
-import { errorHandler, InvalidDataError, UnauthorizedError } from "$lib/server/utils";
+import {
+  addProduct,
+  getProductFromForm,
+  getProductsWithConfig,
+} from "$lib/server/features/product";
+import {
+  getPaginationFromSearchParams,
+  serverErrorHandler,
+  UnauthorizedError,
+} from "$lib/server/utils";
 import { json } from "@sveltejs/kit";
-import * as v from "valibot";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ locals, url: { searchParams } }) => {
@@ -11,7 +17,7 @@ export const GET: RequestHandler = async ({ locals, url: { searchParams } }) => 
       throw new UnauthorizedError();
     }
 
-    const pagination = getPagination(searchParams);
+    const pagination = getPaginationFromSearchParams(searchParams);
 
     const productsWithConfig = await getProductsWithConfig({
       userId: locals.user.id,
@@ -23,9 +29,7 @@ export const GET: RequestHandler = async ({ locals, url: { searchParams } }) => 
       data: productsWithConfig,
     });
   } catch (error) {
-    const { responseData, responseInit } = errorHandler(error);
-
-    return json(responseData, responseInit);
+    return serverErrorHandler(error);
   }
 };
 
@@ -35,25 +39,11 @@ export const POST: RequestHandler = async ({ locals, request, url: { searchParam
       throw new UnauthorizedError();
     }
 
-    const pagination = getPagination(searchParams);
-
-    const { output: product, issues } = v.safeParse(
-      v.object({
-        name: nameSchema,
-        quantity: quantitySchema,
-        buyPrice: buyPriceSchema,
-        sellPrice: sellPriceSchema,
-      }),
-      await request.json(),
-    );
-
-    if (issues) {
-      throw new InvalidDataError(
-        "Nama atau jumlah atau harga beli atau harga jual yang dimasukkan salah.",
-      );
-    }
+    const product = getProductFromForm(await request.json());
 
     await addProduct({ userId: locals.user.id, ...product });
+
+    const pagination = getPaginationFromSearchParams(searchParams);
 
     const productsWithConfig = await getProductsWithConfig({
       userId: locals.user.id,
@@ -65,8 +55,6 @@ export const POST: RequestHandler = async ({ locals, request, url: { searchParam
       data: productsWithConfig,
     });
   } catch (error) {
-    const { responseData, responseInit } = errorHandler(error);
-
-    return json(responseData, responseInit);
+    return serverErrorHandler(error);
   }
 };

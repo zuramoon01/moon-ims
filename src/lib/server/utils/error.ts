@@ -1,4 +1,5 @@
-import { HttpStatusCode } from "axios";
+import { HttpStatusCode } from "$lib/types";
+import { json } from "@sveltejs/kit";
 
 export class DuplicateUserError extends Error {
   constructor(message: string) {
@@ -8,9 +9,13 @@ export class DuplicateUserError extends Error {
 }
 
 export class InvalidDataError extends Error {
-  constructor(message: string) {
+  data?: any;
+
+  constructor(message: string, data?: any) {
     super(message);
+
     this.name = "InvalidDataError";
+    this.data = data;
   }
 }
 
@@ -22,17 +27,12 @@ export class UnauthorizedError extends Error {
   }
 }
 
-export function errorHandler(error: unknown) {
-  const responseData: {
-    message: string;
-    errorType: string;
-  } = {
+export function serverErrorHandler(error: unknown) {
+  const data: any = {
     message: "Error tidak diketahui. Mohon laporkan kepada Developer.",
-    errorType: "UncatchError",
   };
-
-  const responseInit: ResponseInit | undefined = {
-    status: HttpStatusCode.BadRequest,
+  const init: ResponseInit | undefined = {
+    status: HttpStatusCode.BAD_REQUEST,
   };
 
   if (
@@ -40,18 +40,20 @@ export function errorHandler(error: unknown) {
     error instanceof InvalidDataError ||
     error instanceof UnauthorizedError
   ) {
-    responseData.message = error.message;
-    responseData.errorType = error.name;
+    data.message = error.message;
+  }
+
+  if (error instanceof InvalidDataError) {
+    if (error.data) {
+      data.data = error.data;
+    }
   }
 
   if (error instanceof UnauthorizedError) {
-    responseInit.status = HttpStatusCode.Unauthorized;
+    init.status = HttpStatusCode.UNAUTHORIZED;
   }
 
-  console.log(error);
+  console.error(error);
 
-  return {
-    responseData,
-    responseInit,
-  };
+  return json(data, init);
 }

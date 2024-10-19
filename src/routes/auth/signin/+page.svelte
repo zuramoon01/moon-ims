@@ -1,52 +1,48 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { passwordSchema, user, usernameSchema } from "$lib/features/user";
+  import { getAuthResponseData, passwordSchema, user, usernameSchema } from "$lib/features/user";
   import { addToast, Button, Input } from "$lib/ui";
-  import { errorHandler } from "$lib/utils";
+  import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import * as v from "valibot";
+  import { flatten, safeParse } from "valibot";
 
   let state: "idle" | "loading" = "idle";
 
   let controller: AbortController;
 
-  let username = "";
-  let usernameErrors: string[] = [];
+  const inputs = {
+    username: "",
+    password: "",
+  };
+  const validations = {
+    username: usernameSchema,
+    password: passwordSchema,
+  } as const;
+  const errors: {
+    username: string[];
+    password: string[];
+  } = {
+    username: [],
+    password: [],
+  };
 
-  let password = "";
-  let passwordErrors: string[] = [];
+  function validateInput(id: keyof typeof inputs) {
+    const { issues } = safeParse(validations[id], inputs[id]);
 
-  function handleValidation(value: string, schema: typeof usernameSchema | typeof passwordSchema) {
-    if (value === "") {
-      return [];
-    }
-
-    const { issues } = v.safeParse(schema, value);
-
-    return issues ? v.flatten(issues).root || [] : [];
-  }
-
-  function validateInput(id: "username" | "password") {
-    if (id === "username") {
-      usernameErrors = handleValidation(username, usernameSchema);
-    } else {
-      passwordErrors = handleValidation(password, passwordSchema);
-    }
+    errors[id] = issues ? flatten(issues).root || [] : [];
   }
 
   async function signIn() {
     try {
-      if (usernameErrors.length > 0 || passwordErrors.length > 0) {
-        addToast({
+      if (errors.username.length > 0 || errors.password.length > 0) {
+        return addToast({
           title: "Warning",
           description: "Silahkan isi form masuk sesuai dengan ketentuan yang diberikan.",
         });
-
-        return;
       }
 
-      if (state === "loading") {
+      if (state === "loading" && controller) {
         controller.abort();
       }
 
@@ -54,29 +50,31 @@
 
       controller = new AbortController();
 
-      const { data } = await axios.post(
-        "/api/auth/signin",
-        {
-          username,
-          password,
-        },
-        {
-          signal: controller.signal,
-        },
-      );
+      const response = await axios.post("/api/auth/signin", inputs, {
+        signal: controller.signal,
+      });
+
+      const data = getAuthResponseData(response.data);
+
+      if (!data) {
+        return addToast({
+          title: "Warning",
+          description: "Payload tidak sesuai.",
+        });
+      }
+
+      user.set(data.data);
 
       addToast({
         title: "Success",
         description: data.message,
       });
 
-      user.set(data.data);
+      state = "idle";
 
       goto("/");
-
-      state = "idle";
     } catch (error) {
-      errorHandler(error);
+      clientErrorHandler(error);
 
       if (!axios.isCancel(error)) {
         state = "idle";
@@ -97,12 +95,12 @@
     class="contents"
   >
     <Input
-      bind:value={username}
+      bind:value={inputs.username}
       on:input={() => {
         validateInput("username");
       }}
       label="Nama"
-      errorMessages={usernameErrors}
+      errorMessages={errors.username}
       attr={{
         type: "text",
         id: "username",
@@ -113,12 +111,12 @@
     />
 
     <Input
-      bind:value={password}
+      bind:value={inputs.password}
       on:input={() => {
         validateInput("password");
       }}
       label="Kata Sandi"
-      errorMessages={passwordErrors}
+      errorMessages={errors.password}
       attr={{
         type: "password",
         id: "password",

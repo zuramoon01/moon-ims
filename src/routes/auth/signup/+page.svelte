@@ -1,64 +1,62 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { confirmPasswordSchema, passwordSchema, user, usernameSchema } from "$lib/features/user";
+  import {
+    confirmPasswordSchema,
+    getAuthResponseData,
+    passwordSchema,
+    user,
+    usernameSchema,
+  } from "$lib/features/user";
   import { addToast, Button, Input } from "$lib/ui";
-  import { errorHandler } from "$lib/utils";
+  import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import * as v from "valibot";
+  import { flatten, safeParse } from "valibot";
 
   let state: "idle" | "loading" = "idle";
 
   let controller: AbortController;
 
-  let username = "";
-  let usernameErrors: string[] = [];
+  const inputs = {
+    username: "",
+    password: "",
+    confirmPassword: "",
+  };
+  const validations = {
+    username: usernameSchema,
+    password: passwordSchema,
+    confirmPassword: confirmPasswordSchema,
+  } as const;
+  const errors: {
+    username: string[];
+    password: string[];
+    confirmPassword: string[];
+  } = {
+    username: [],
+    password: [],
+    confirmPassword: [],
+  };
 
-  let password = "";
-  let passwordErrors: string[] = [];
+  function validateInput(id: keyof typeof inputs) {
+    const { issues } = safeParse(validations[id], inputs[id]);
 
-  let confirmPassword = "";
-  let confirmPasswordErrors: string[] = [];
-
-  function handleValidation(
-    value: string,
-    schema: typeof usernameSchema | typeof passwordSchema | typeof confirmPasswordSchema,
-  ) {
-    if (value === "") {
-      return [];
-    }
-
-    const { issues } = v.safeParse(schema, value);
-
-    return issues ? v.flatten(issues).root || [] : [];
-  }
-
-  function validateInput(id: "username" | "password" | "confirmPassword") {
-    if (id === "username") {
-      usernameErrors = handleValidation(username, usernameSchema);
-    } else if (id === "password") {
-      passwordErrors = handleValidation(password, passwordSchema);
-    } else {
-      confirmPasswordErrors = handleValidation(confirmPassword, confirmPasswordSchema);
-    }
+    errors[id] = issues ? flatten(issues).root || [] : [];
   }
 
   async function signUp() {
     try {
       if (
-        usernameErrors.length > 0 ||
-        passwordErrors.length > 0 ||
-        confirmPasswordErrors.length > 0
+        errors.username.length > 0 ||
+        errors.password.length > 0 ||
+        errors.confirmPassword.length > 0
       ) {
-        addToast({
+        return addToast({
           title: "Warning",
           description: "Silahkan isi form daftar sesuai dengan ketentuan yang diberikan.",
         });
-
-        return;
       }
 
-      if (state === "loading") {
+      if (state === "loading" && controller) {
         controller.abort();
       }
 
@@ -66,30 +64,31 @@
 
       controller = new AbortController();
 
-      const { data } = await axios.post(
-        "/api/auth/signup",
-        {
-          username,
-          password,
-          confirmPassword,
-        },
-        {
-          signal: controller.signal,
-        },
-      );
+      const response = await axios.post("/api/auth/signup", inputs, {
+        signal: controller.signal,
+      });
+
+      const data = getAuthResponseData(response.data);
+
+      if (!data) {
+        return addToast({
+          title: "Warning",
+          description: "Payload tidak sesuai.",
+        });
+      }
+
+      user.set(data.data);
 
       addToast({
         title: "Success",
         description: data.message,
       });
 
-      user.set(data.data);
+      state = "idle";
 
       goto("/");
-
-      state = "idle";
     } catch (error) {
-      errorHandler(error);
+      clientErrorHandler(error);
 
       if (!axios.isCancel(error)) {
         state = "idle";
@@ -110,12 +109,12 @@
     class="contents"
   >
     <Input
-      bind:value={username}
+      bind:value={inputs.username}
       on:input={() => {
         validateInput("username");
       }}
       label="Nama"
-      errorMessages={usernameErrors}
+      errorMessages={errors.username}
       attr={{
         type: "text",
         id: "username",
@@ -126,12 +125,12 @@
     />
 
     <Input
-      bind:value={password}
+      bind:value={inputs.password}
       on:input={() => {
         validateInput("password");
       }}
       label="Kata sandi"
-      errorMessages={passwordErrors}
+      errorMessages={errors.password}
       attr={{
         type: "password",
         id: "password",
@@ -142,12 +141,12 @@
     />
 
     <Input
-      bind:value={confirmPassword}
+      bind:value={inputs.confirmPassword}
       on:input={() => {
         validateInput("confirmPassword");
       }}
       label="Konfirmasi kata sandi"
-      errorMessages={confirmPasswordErrors}
+      errorMessages={errors.confirmPassword}
       attr={{
         type: "password",
         id: "confirmPassword",

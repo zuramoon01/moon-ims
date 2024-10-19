@@ -1,25 +1,25 @@
 import { JWT_SECRET } from "$env/static/private";
-import { companyNameSchema, usernameSchema, uuidSchema, type User } from "$lib/features/user";
-import jwt from "jsonwebtoken";
-import * as v from "valibot";
+import jwt, { type SignOptions, type VerifyOptions } from "jsonwebtoken";
 
-export function createAccessToken(payload: User) {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: "1d",
-  });
+export const JWTOptions = {
+  AccessToken: {
+    expiresIn: "1m",
+  },
+  RefreshToken: {
+    expiresIn: "7d",
+  },
+} satisfies { [key: string]: SignOptions };
+
+export function createToken(payload: string | Buffer | object, options?: SignOptions) {
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
-export function verifyAccessToken(token: string) {
+export function verifyToken(token: string, options?: VerifyOptions) {
   try {
-    return v.parse(
-      v.object({
-        id: uuidSchema,
-        username: usernameSchema,
-        companyName: companyNameSchema,
-      }),
-      jwt.verify(token, JWT_SECRET),
-    );
-  } catch (_) {
-    return null;
+    return jwt.verify(token, JWT_SECRET, options);
+  } catch (error) {
+    console.error(error);
+
+    return undefined;
   }
 }

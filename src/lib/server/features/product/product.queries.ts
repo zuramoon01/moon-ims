@@ -66,8 +66,6 @@ export function addProduct({
   buyPrice: PriceTable["buyPrice"];
   sellPrice: PriceTable["sellPrice"];
 }) {
-  console.log(userId);
-
   return sql`
     WITH new_product AS
       (

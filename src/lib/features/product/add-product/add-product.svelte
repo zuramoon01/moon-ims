@@ -1,22 +1,29 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import type { DialogState, State } from "$lib/types";
-  import { addToast, Button, Input } from "$lib/ui";
-  import { errorHandler, generateId, rupiahCurrency } from "$lib/utils";
-  import axios from "axios";
-  import clsx from "clsx";
-  import X from "lucide-svelte/icons/x";
-  import { fade } from "svelte/transition";
-  import * as v from "valibot";
-  import { productStore } from "../product.store";
   import {
     buyPriceSchema,
+    getProductResponseData,
     nameSchema,
+    productStore,
     quantitySchema,
     sellPriceSchema,
-  } from "../product.validation";
+  } from "$lib/features/product";
+  import type { DialogState, State } from "$lib/types";
+  import { addToast, Button, Input } from "$lib/ui";
+  import { clientErrorHandler, generateId, rupiahCurrency } from "$lib/utils";
+  import axios from "axios";
+  import clsx from "clsx";
+  import { X } from "lucide-svelte";
+  import { fade } from "svelte/transition";
+  import { flatten, safeParse } from "valibot";
 
   let state: DialogState = "close";
+  function openDialog() {
+    state = "open";
+  }
+  function closeDialog() {
+    state = "close";
+  }
 
   const ids = {
     dialog: generateId(),
@@ -25,57 +32,6 @@
 
   let currentFocusIndexElement = 0;
   let listFocusableElement: HTMLElement[] = [];
-
-  let name: string = "";
-  let nameErrors: string[] = [];
-
-  let quantity: string = "";
-  let quantityErrors: string[] = [];
-
-  let buyPrice: string = "";
-  let buyPriceErrors: string[] = [];
-
-  let sellPrice: string = "";
-  let sellPriceErrors: string[] = [];
-
-  $: ({ setProductStore } = productStore);
-
-  let submitState: State = "idle";
-  let submitController: AbortController;
-
-  function handleValidation(
-    value: string,
-    schema:
-      | typeof nameSchema
-      | typeof quantitySchema
-      | typeof buyPriceSchema
-      | typeof sellPriceSchema,
-  ) {
-    const { issues } = v.safeParse(schema, value);
-
-    return issues ? v.flatten(issues).root || [] : [];
-  }
-
-  function validateInput(id: "name" | "quantity" | "buyPrice" | "sellPrice") {
-    if (id === "name") {
-      nameErrors = handleValidation(name, nameSchema);
-    } else if (id === "quantity") {
-      quantityErrors = handleValidation(quantity, quantitySchema);
-    } else if (id === "buyPrice") {
-      buyPriceErrors = handleValidation(buyPrice, buyPriceSchema);
-    } else {
-      sellPriceErrors = handleValidation(sellPrice, sellPriceSchema);
-    }
-  }
-
-  function openDialog() {
-    state = "open";
-  }
-
-  function closeDialog() {
-    state = "close";
-  }
-
   function productDialog(node: HTMLElement) {
     listFocusableElement = Array.from(
       node.querySelectorAll(
@@ -83,7 +39,6 @@
       ),
     );
   }
-
   function handleKeydownDialog(
     e: KeyboardEvent & {
       currentTarget: EventTarget & HTMLFormElement;
@@ -112,13 +67,48 @@
     }
   }
 
+  $: ({ setProductStore } = productStore);
+
+  let submitState: State = "idle";
+  let submitController: AbortController;
+
+  const inputs = {
+    name: "",
+    quantity: "",
+    buyPrice: "",
+    sellPrice: "",
+  };
+  const validations = {
+    name: nameSchema,
+    quantity: quantitySchema,
+    buyPrice: buyPriceSchema,
+    sellPrice: sellPriceSchema,
+  } as const;
+  const errors: {
+    name: string[];
+    quantity: string[];
+    buyPrice: string[];
+    sellPrice: string[];
+  } = {
+    name: [],
+    quantity: [],
+    buyPrice: [],
+    sellPrice: [],
+  };
+
+  function validateInput(id: keyof typeof inputs) {
+    const { issues } = safeParse(validations[id], inputs[id]);
+
+    errors[id] = issues ? flatten(issues).root || [] : [];
+  }
+
   async function addProduct() {
     try {
       if (
-        nameErrors.length > 0 ||
-        quantityErrors.length > 0 ||
-        buyPriceErrors.length > 0 ||
-        sellPriceErrors.length > 0
+        errors.name.length > 0 ||
+        errors.quantity.length > 0 ||
+        errors.buyPrice.length > 0 ||
+        errors.sellPrice.length > 0
       ) {
         addToast({
           title: "Warning",
@@ -128,7 +118,7 @@
         return;
       }
 
-      if (submitState === "loading") {
+      if (submitState === "loading" && submitController) {
         submitController.abort();
       }
 
@@ -138,36 +128,36 @@
 
       const searchParamsUrl = $page.url.searchParams.toString();
 
-      const { data } = await axios.post(
-        `/api/products?${searchParamsUrl}`,
-        {
-          name,
-          quantity,
-          buyPrice,
-          sellPrice,
-        },
-        {
-          signal: submitController.signal,
-        },
-      );
+      const response = await axios.post(`/api/products?${searchParamsUrl}`, inputs, {
+        signal: submitController.signal,
+      });
+
+      const data = getProductResponseData(response.data);
+
+      if (!data) {
+        return addToast({
+          title: "Warning",
+          description: "Payload tidak sesuai.",
+        });
+      }
+
+      setProductStore(data.data);
 
       addToast({
         title: "Success",
         description: data.message,
       });
 
-      setProductStore(data.data);
-
-      name = "";
-      quantity = "";
-      buyPrice = "";
-      sellPrice = "";
+      inputs.name = "";
+      inputs.quantity = "";
+      inputs.buyPrice = "";
+      inputs.sellPrice = "";
 
       submitState = "idle";
 
       closeDialog();
     } catch (error) {
-      errorHandler(error);
+      clientErrorHandler(error);
 
       if (!axios.isCancel(error)) {
         submitState = "idle";
@@ -236,12 +226,12 @@
 
     <div class="contents">
       <Input
-        bind:value={name}
+        bind:value={inputs.name}
         on:input={() => {
           validateInput("name");
         }}
         label="Nama"
-        errorMessages={nameErrors}
+        errorMessages={errors.name}
         attr={{
           type: "text",
           id: "name",
@@ -254,12 +244,12 @@
       <div class={clsx("flex w-full items-start gap-x-4 gap-y-2", "max-sm:flex-col")}>
         <div class={clsx("w-full", "sm:w-[calc((100%_-_1rem)_/_2_*_0.4)] sm:shrink-0")}>
           <Input
-            bind:value={quantity}
+            bind:value={inputs.quantity}
             on:input={() => {
               validateInput("quantity");
             }}
             label="Jumlah"
-            errorMessages={quantityErrors}
+            errorMessages={errors.quantity}
             attr={{
               type: "number",
               id: "quantity",
@@ -272,12 +262,12 @@
 
         <div class="contents">
           <Input
-            bind:value={buyPrice}
+            bind:value={inputs.buyPrice}
             on:input={() => {
               validateInput("buyPrice");
             }}
             label="Harga Beli"
-            errorMessages={buyPriceErrors}
+            errorMessages={errors.buyPrice}
             attr={{
               type: "number",
               id: "buyPrice",
@@ -288,12 +278,12 @@
           />
 
           <Input
-            bind:value={sellPrice}
+            bind:value={inputs.sellPrice}
             on:input={() => {
               validateInput("sellPrice");
             }}
             label="Harga Jual"
-            errorMessages={sellPriceErrors}
+            errorMessages={errors.sellPrice}
             attr={{
               type: "number",
               id: "sellPrice",

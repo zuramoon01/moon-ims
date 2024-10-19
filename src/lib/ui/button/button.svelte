@@ -8,7 +8,7 @@
     type Class,
     type IconComponent,
   } from "$lib/ui";
-  import LoaderCircle from "lucide-svelte/icons/loader-circle";
+  import { LoaderCircle } from "lucide-svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   export let state: State = "idle";

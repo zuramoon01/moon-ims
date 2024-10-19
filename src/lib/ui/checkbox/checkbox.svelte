@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
-  import Check from "lucide-svelte/icons/check";
-  import Minus from "lucide-svelte/icons/minus";
+  import { Check, Minus } from "lucide-svelte";
   import type { CheckboxState } from "./checkbox.type";
 
   export let state: CheckboxState;

@@ -1,5 +1,7 @@
-export * from "./product.store";
-export * from "./product.type";
-export * from "./product.validation";
+export * from "./product.stores";
+export * from "./product.types";
+export * from "./product.utils";
+export * from "./product.validations";
 
 export * from "./add-product";
+

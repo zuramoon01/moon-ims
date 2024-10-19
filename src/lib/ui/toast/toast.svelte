@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from "$lib/ui";
   import clsx from "clsx";
-  import X from "lucide-svelte/icons/x";
+  import { X } from "lucide-svelte";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
   import {

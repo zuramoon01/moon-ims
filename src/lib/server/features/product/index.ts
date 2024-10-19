@@ -1,2 +1,3 @@
-export * from "./product.query";
-export * from "./product.util";
+export * from "./product.queries";
+export * from "./product.utils";
+

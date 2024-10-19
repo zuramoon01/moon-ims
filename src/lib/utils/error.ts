@@ -1,7 +1,7 @@
 import { addToast } from "$lib/ui";
 import { AxiosError } from "axios";
 
-export function errorHandler(error: unknown) {
+export function clientErrorHandler(error: unknown) {
   if (error instanceof AxiosError) {
     if (error.response) {
       const { data, status, headers } = error.response;

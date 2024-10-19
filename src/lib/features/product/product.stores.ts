@@ -15,31 +15,31 @@ export const productTableTitles = [
 
     // 7px Gap antara kolom nama - kolom total harga jual
     classes:
-      "w-[calc(100%_-_(2.25rem_+_6rem_+_12rem_+_12rem_+_10rem_+_12rem_+_10rem_+_7px))] min-w-60 justify-start",
+      "w-[calc(100%_-_(2.25rem_+_6rem_+_12rem_+_12rem_+_10rem_+_12rem_+_10rem_+_7px))] min-w-60",
   },
   {
     name: "Jumlah",
-    classes: "w-[6rem] justify-start",
+    classes: "w-[6rem]",
   },
   {
     name: "Ketersediaan",
-    classes: "w-[12rem] justify-start",
+    classes: "w-[12rem]",
   },
   {
     name: "Harga Beli Per Satuan",
-    classes: "w-[12rem] justify-start",
+    classes: "w-[12rem]",
   },
   {
     name: "Total Harga Beli",
-    classes: "w-[10rem] justify-start",
+    classes: "w-[10rem]",
   },
   {
     name: "Harga Jual Per Satuan",
-    classes: "w-[12rem] justify-start",
+    classes: "w-[12rem]",
   },
   {
     name: "Total Harga Jual",
-    classes: "w-[10rem] justify-start",
+    classes: "w-[10rem]",
   },
 ] as const;
 

@@ -1,7 +1,5 @@
-import Box from "lucide-svelte/icons/box";
-import ChartNoAxesCombined from "lucide-svelte/icons/chart-no-axes-combined";
-import Gauge from "lucide-svelte/icons/gauge";
-import ReceiptText from "lucide-svelte/icons/receipt-text";
+import { Box, ChartNoAxesCombined, Gauge, ReceiptText } from "lucide-svelte";
+import { writable } from "svelte/store";
 
 export const navs = [
   {
@@ -25,3 +23,6 @@ export const navs = [
     link: "/laporan",
   },
 ];
+
+export const headerHeight = writable(0);
+export const navMobileHeight = writable(0);

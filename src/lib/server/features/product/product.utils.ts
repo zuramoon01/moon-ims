@@ -1,16 +1,27 @@
+import { buyPriceSchema, nameSchema, quantitySchema, sellPriceSchema } from "$lib/features/product";
 import type { UserTable } from "$lib/features/user";
-import { limitSchema, pageSchema } from "$lib/validations";
-import { object, parse } from "valibot";
-import { getProducts, getTotalProduct } from "./product.query";
+import { getProducts, getTotalProduct } from "$lib/server/features/product";
+import { InvalidDataError } from "$lib/server/utils";
+import { object, safeParse } from "valibot";
 
-export function getPagination(searchParams: URLSearchParams) {
-  return parse(
+export function getProductFromForm(data: any) {
+  const { success, output: product } = safeParse(
     object({
-      page: pageSchema,
-      limit: limitSchema,
+      name: nameSchema,
+      quantity: quantitySchema,
+      buyPrice: buyPriceSchema,
+      sellPrice: sellPriceSchema,
     }),
-    Object.fromEntries(searchParams.entries()),
+    data,
   );
+
+  if (!success) {
+    throw new InvalidDataError(
+      "Nama atau jumlah atau harga beli atau harga jual yang dimasukkan salah.",
+    );
+  }
+
+  return product;
 }
 
 export async function getProductsWithConfig({
