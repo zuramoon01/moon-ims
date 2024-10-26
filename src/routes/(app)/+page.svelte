@@ -1,61 +1,56 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { getProductResponseData } from "$lib/features/product";
+  import { AddProduct } from "$lib/features/product/components";
   import {
-    AddProduct,
-    getProductResponseData,
+    headerHeight,
+    navMobileHeight,
     productStore,
     productTableColumnBaseClass,
     productTableTitles,
-  } from "$lib/features/product";
-  import { headerHeight, navMobileHeight } from "$lib/stores";
-  import { addToast, Button, Checkbox } from "$lib/ui";
+    Route,
+  } from "$lib/stores";
+  import { Button, Checkbox, Input } from "$lib/ui";
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
   import { ChevronLeft, ChevronRight, Filter } from "lucide-svelte";
   import { onMount } from "svelte";
 
-  $: ({ products, config, table, setProductStore, updateTableState } = productStore);
-  $: ({ currentPage, totalPage, from, to, limit, total } = $config);
+  let { products, config, table, setProductStore, updateTableState } = $derived(productStore);
+  let { currentPage, totalPage, from, to, limit, total } = $derived($config);
 
-  let productTableTitleHeight = 0;
-  let productTableInfoHeight = 0;
+  let productTableTitleHeight = $state(0);
+  let productTableInfoHeight = $state(0);
 
-  let inputPageElement: HTMLInputElement;
+  let inputPageElement: HTMLInputElement | undefined = $state(undefined);
 
-  let inputLimit = 0;
-  let inputPage = 0;
+  let inputs = $state({
+    limit: 0,
+    page: 0,
+  });
 
-  async function updateSearchParamsUrl() {
-    await goto(
-      `/?${new URLSearchParams({ page: inputPage.toString(), limit: inputLimit.toString() }).toString()}`,
+  function updateSearchParamsUrl() {
+    return goto(
+      `${Route.Dashboard}?${new URLSearchParams({ page: inputs.page.toString(), limit: inputs.limit.toString() }).toString()}`,
     );
-  }
-
-  function getSearchParamsUrl() {
-    return $page.url.searchParams.toString();
   }
 
   async function getProducts() {
     try {
-      const searchParamsUrl = getSearchParamsUrl();
+      const searchParamsUrl = $page.url.searchParams.toString();
 
-      const response = await axios.get(`/api/products?${searchParamsUrl}`);
+      const response = await axios.get(`${Route.Api.Product}?${searchParamsUrl}`);
 
-      const data = getProductResponseData(response.data);
+      const { data } = getProductResponseData(response.data);
 
-      if (!data) {
-        return addToast({
-          title: "Warning",
-          description: "Payload tidak sesuai.",
-        });
-      }
+      setProductStore(data);
 
-      setProductStore(data.data);
-
-      inputLimit = data.data.config.limit;
-      inputPage = data.data.config.currentPage;
+      inputs = {
+        limit: limit,
+        page: currentPage,
+      };
 
       await updateSearchParamsUrl();
     } catch (error) {
@@ -69,45 +64,45 @@
   }
 
   async function updateLimit() {
-    if (isNaN(inputLimit) || inputLimit < 1) {
-      inputLimit = 1;
-    } else if (inputLimit > 15) {
-      inputLimit = 15;
+    if (isNaN(inputs.limit) || inputs.limit < 1) {
+      inputs.limit = 1;
+    } else if (inputs.limit > 15) {
+      inputs.limit = 15;
     }
 
     await updateUrlAndProducts();
   }
 
-  async function updateCurrentPage(action: "previous" | "input" | "next") {
-    if (action === "previous") {
-      inputPage -= 1;
-
-      if (inputPage < 1) {
-        inputPage = 1;
-      }
-    } else if (action === "input") {
-      if (isNaN(inputPage) || inputPage < 1) {
-        inputPage = 1;
-      } else if (inputPage > totalPage) {
-        inputPage = totalPage;
-      }
-    } else {
-      inputPage += 1;
-
-      if (inputPage > totalPage) {
-        inputPage = totalPage;
-      }
+  async function updatePage(action: "previous" | "input" | "next") {
+    switch (action) {
+      case "previous":
+        if (inputs.page > 1) {
+          inputs.page -= 1;
+        }
+        break;
+      case "next":
+        if (inputs.page < totalPage) {
+          inputs.page += 1;
+        }
+        break;
+      default:
+        if (!inputs.page || isNaN(inputs.page) || inputs.page < 1) {
+          inputs.page = 1;
+        } else if (inputs.page > totalPage) {
+          inputs.page = totalPage;
+        }
+        break;
     }
 
     await updateUrlAndProducts();
   }
 
   onMount(async () => {
-    const { search } = $page.url;
-
-    if (search === "") {
-      inputLimit = 15;
-      inputPage = 1;
+    if ($page.url.search === "") {
+      inputs = {
+        limit: 15,
+        page: 1,
+      };
 
       await updateSearchParamsUrl();
     }
@@ -116,12 +111,16 @@
   });
 </script>
 
+<svelte:head>
+  <title>Moon IMS | Dashboard</title>
+</svelte:head>
+
 <main
   class="flex w-full grow flex-col items-start justify-between overflow-hidden rounded-lg border border-black/10 p-4"
 >
   <div class="flex w-full flex-col items-start gap-4">
     <div
-      bind:clientHeight={productTableTitleHeight}
+      bind:offsetHeight={productTableTitleHeight}
       class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2"
     >
       <div class="flex items-center gap-2">
@@ -136,8 +135,10 @@
 
       <div class="flex items-center gap-4">
         <Button
-          Icon={Filter}
-          iconClass={clsx("size-[1.125rem]")}
+          icon={{
+            Component: Filter,
+            attr: { "aria-label": "Filter", class: clsx("size-[1.125rem]") },
+          }}
           attr={{
             type: "button",
             class: clsx("rounded size-9"),
@@ -150,19 +151,17 @@
 
     {#if $products.length > 0}
       <div
-        class="product-data scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
-        style={`
-            --headerHeight: ${$headerHeight}px;
-            --productTableTitleHeight: ${productTableTitleHeight}px;
-            --productTableInfoHeight: ${productTableInfoHeight}px;
-            --navMobileHeight: ${$navMobileHeight}px;
-          `}
+        class="scrollbar-hide flex w-full flex-col gap-[1px] overflow-auto bg-black/10 p-[1px]"
+        style="max-height: calc(100dvh - ({$headerHeight +
+          productTableTitleHeight +
+          productTableInfoHeight +
+          $navMobileHeight}px + 2px + {$navMobileHeight === 0 ? '6rem' : '7rem'}));"
       >
-        <div class="flex w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
+        <div class="flex min-h-9 w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
           <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
             <Checkbox
               state={$table.state}
-              onChange={() => {
+              onchange={() => {
                 updateTableState({ type: "group" });
               }}
             />
@@ -173,12 +172,12 @@
           {/each}
         </div>
 
-        {#each $products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
+        {#each $products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice }}
           <div class="flex w-full gap-[1px] text-sm">
             <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
               <Checkbox
                 state={$table.products.has(id) ? "true" : "false"}
-                onChange={() => {
+                onchange={() => {
                   updateTableState({ type: "single", productId: id });
                 }}
               />
@@ -225,30 +224,24 @@
 
   {#if $products.length > 0}
     <div
-      bind:clientHeight={productTableInfoHeight}
+      bind:offsetHeight={productTableInfoHeight}
       class="scrollbar-hide flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 overflow-x-auto rounded border border-black/10 px-4 py-2"
     >
       <form
-        on:submit|preventDefault={updateLimit}
+        onsubmit={(e) => {
+          e.preventDefault();
+
+          updateLimit();
+        }}
         class="flex items-center gap-2"
       >
-        <input
-          type="number"
-          value={inputLimit}
-          on:input={(e) => {
-            inputLimit = e.currentTarget.valueAsNumber;
+        <Input
+          bind:value={inputs.limit}
+          containerClass={clsx("w-12")}
+          attr={{
+            type: "number",
+            class: clsx("h-8 w-12 px-2 text-center text-sm font-medium tabular-nums leading-none"),
           }}
-          class={clsx(
-            "h-8 w-12 rounded border border-black/60 bg-white px-2 text-center text-sm font-medium tabular-nums leading-none text-black/60 outline-none",
-
-            "placeholder:text-black/20",
-            "placeholder-shown:border-black/20",
-
-            "hover:border-blue/40",
-            "focus:border-blue/40",
-            "focus-visible:border-blue/40",
-            "active:border-blue/40",
-          )}
         />
 
         <div class="flex flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none">
@@ -259,29 +252,38 @@
 
       <div class="flex items-center gap-4">
         <Button
-          Icon={ChevronLeft}
-          iconClass={clsx("size-6")}
-          variant="outline"
           attr={{
             type: "button",
             class: clsx("shrink-0 rounded border h-8 w-12"),
+            onclick: () => {
+              updatePage("previous");
+            },
           }}
-          on:click={() => {
-            updateCurrentPage("previous");
+          variant="outline"
+          icon={{
+            Component: ChevronLeft,
+            attr: {
+              "aria-label": "Halaman Sebelumnya",
+              class: clsx("size-6"),
+            },
           }}
         />
 
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <form
-          on:submit|preventDefault={() => {
-            updateCurrentPage("input");
+          tabindex="0"
+          onsubmit={(e) => {
+            e.preventDefault();
+
+            updatePage("input");
           }}
-          on:click={() => {
-            inputPageElement.focus();
+          onclick={() => {
+            inputPageElement?.focus();
           }}
           class={clsx(
-            "flex h-8 shrink-0 cursor-text items-center gap-1 rounded border border-black/60 bg-white px-2 text-sm font-medium tabular-nums leading-none text-black/60",
+            "flex h-8 shrink-0 cursor-text items-center gap-1 rounded border border-black/60 bg-white px-2 text-sm font-medium tabular-nums leading-none text-black/60 outline-none",
 
             "placeholder:text-black/20",
             "placeholder-shown:border-black/20",
@@ -294,12 +296,14 @@
         >
           <input
             bind:this={inputPageElement}
+            tabindex="-1"
             type="number"
-            value={inputPage}
-            on:input={(e) => {
-              inputPage = e.currentTarget.valueAsNumber;
-            }}
-            style:width={`${(!isNaN(inputPage) ? inputPage.toString().length : 1) * 0.5625}rem`}
+            min={1}
+            max={totalPage}
+            bind:value={inputs.page}
+            style="width: {(inputs.page && !isNaN(inputs.page)
+              ? inputs.page.toString().length
+              : 1) * 0.5625}rem;"
             class="bg-transparent text-center outline-none"
           />
 
@@ -309,48 +313,23 @@
         </form>
 
         <Button
-          Icon={ChevronRight}
-          iconClass={clsx("size-6")}
-          variant="outline"
           attr={{
             type: "button",
             class: clsx("shrink-0 rounded border h-8 w-12"),
+            onclick: () => {
+              updatePage("next");
+            },
           }}
-          on:click={() => {
-            updateCurrentPage("next");
+          variant="outline"
+          icon={{
+            Component: ChevronRight,
+            attr: {
+              "aria-label": "Halaman Berikutnya",
+              class: clsx("size-6"),
+            },
           }}
         />
       </div>
     </div>
   {/if}
 </main>
-
-<style class="postcss">
-  /*
-    Height Calculation
-    // 100dvh = Ukuran yang bisa dicakup browser
-    // 2px adalah ukuran tambahan untuk border dan + 2px diakhir adalah border dari produk
-    // 6rem / 7rem Jarak yang memisahkan tiap elemen header, product table title, product table info, dan nav mobile
-  */
-  .product-data {
-    max-height: calc(
-      100dvh -
-        (
-          var(--headerHeight) + 2px + var(--productTableTitleHeight) + var(--productTableInfoHeight) +
-            2px + var(--navMobileHeight) + 2px + 7rem + 2px
-        )
-    );
-  }
-
-  @screen md {
-    .product-data {
-      max-height: calc(
-        100dvh -
-          (
-            var(--headerHeight) + 2px + var(--productTableTitleHeight) +
-              var(--productTableInfoHeight) + 2px + 6rem + 2px
-          )
-      );
-    }
-  }
-</style>

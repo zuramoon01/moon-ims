@@ -1,143 +1,123 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { getAuthResponseData, passwordSchema, user, usernameSchema } from "$lib/features/user";
-  import { addToast, Button, Input } from "$lib/ui";
+  import { AuthForm } from "$lib/components";
+  import { getAuthResponseData, PasswordSchema, UsernameSchema } from "$lib/features/user";
+  import { addToasts, createFormStore, Route, user } from "$lib/stores";
+  import type { Status } from "$lib/types";
+  import { Button, Input } from "$lib/ui";
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import { flatten, safeParse } from "valibot";
 
-  let state: "idle" | "loading" = "idle";
+  let status: Status = $state("idle");
 
   let controller: AbortController;
 
-  const inputs = {
-    username: "",
-    password: "",
-  };
-  const validations = {
-    username: usernameSchema,
-    password: passwordSchema,
-  } as const;
-  const errors: {
-    username: string[];
-    password: string[];
-  } = {
-    username: [],
-    password: [],
-  };
+  const { inputs, errors, validateInput, hasError } = createFormStore({
+    username: UsernameSchema,
+    password: PasswordSchema,
+  });
 
-  function validateInput(id: keyof typeof inputs) {
-    const { issues } = safeParse(validations[id], inputs[id]);
-
-    errors[id] = issues ? flatten(issues).root || [] : [];
-  }
-
-  async function signIn() {
+  async function signIn(
+    e: SubmitEvent & {
+      currentTarget: EventTarget & HTMLFormElement;
+    },
+  ) {
     try {
-      if (errors.username.length > 0 || errors.password.length > 0) {
-        return addToast({
-          title: "Warning",
-          description: "Silahkan isi form masuk sesuai dengan ketentuan yang diberikan.",
+      e.preventDefault();
+
+      if (hasError()) {
+        return addToasts({
+          type: "warning",
+          title: "Form Masuk Gagal",
+          description: "Silahkan isi data pada form masuk sesuai dengan ketentuan yang diberikan.",
         });
       }
 
-      if (state === "loading" && controller) {
+      if (status === "loading" && controller) {
         controller.abort();
       }
 
-      state = "loading";
+      status = "loading";
 
       controller = new AbortController();
 
-      const response = await axios.post("/api/auth/signin", inputs, {
+      const response = await axios.post(Route.Api.Auth.SignIn, $inputs, {
         signal: controller.signal,
       });
 
-      const data = getAuthResponseData(response.data);
+      const { message, data: userData } = getAuthResponseData(response.data);
 
-      if (!data) {
-        return addToast({
-          title: "Warning",
-          description: "Payload tidak sesuai.",
-        });
-      }
+      user.set(userData);
 
-      user.set(data.data);
-
-      addToast({
-        title: "Success",
-        description: data.message,
+      addToasts({
+        type: "success",
+        title: "Berhasil Masuk",
+        description: message,
       });
 
-      state = "idle";
-
-      goto("/");
+      goto(Route.Dashboard);
     } catch (error) {
       clientErrorHandler(error);
-
-      if (!axios.isCancel(error)) {
-        state = "idle";
-      }
     }
+
+    status = "idle";
   }
 </script>
 
-<div
-  class="flex w-full max-w-[25rem] flex-col items-start gap-4 overflow-hidden rounded-lg border border-black/10 bg-white px-4 py-6"
->
-  <div class="w-full">
-    <h1 class="text-2xl leading-none">Masuk</h1>
-  </div>
+<svelte:head>
+  <title>Moon IMS | Masuk</title>
+</svelte:head>
 
+<AuthForm title="Masuk">
   <form
-    on:submit|preventDefault={signIn}
+    onsubmit={signIn}
     class="contents"
   >
     <Input
-      bind:value={inputs.username}
-      on:input={() => {
-        validateInput("username");
-      }}
+      bind:value={$inputs.username}
       label="Nama"
-      errorMessages={errors.username}
+      errorMessages={$errors.username}
       attr={{
         type: "text",
         id: "username",
         name: "username",
         placeholder: "Nama akun",
         required: true,
+        oninput: () => {
+          validateInput("username");
+        },
       }}
     />
 
     <Input
-      bind:value={inputs.password}
-      on:input={() => {
-        validateInput("password");
-      }}
+      bind:value={$inputs.password}
       label="Kata Sandi"
-      errorMessages={errors.password}
+      errorMessages={$errors.password}
       attr={{
         type: "password",
         id: "password",
         name: "password",
         placeholder: "Kata sandi",
         required: true,
+        oninput: () => {
+          validateInput("password");
+        },
       }}
     />
 
     <Button
-      state={state}
       text="Masuk"
+      {status}
     />
   </form>
 
-  <div class="flex w-full items-center justify-center">
+  {#snippet footer()}
     <p class="text-black/60">
       Belum punya akun ? <a
         href="/auth/signup"
         class={clsx("underline", "hover:text-black/80")}>Daftar</a
       >
     </p>
-  </div>
-</div>
+  {/snippet}
+</AuthForm>

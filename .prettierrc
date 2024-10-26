@@ -10,12 +10,7 @@
   "tabWidth": 2,
   "trailingComma": "all",
 
-  "svelteAllowShorthand": false,
-  "svelteStrictMode": false,
-
-  "tailwindFunctions": ["twMerge", "clsx"],
-  "tailwindPreserveDuplicates": true,
-  "tailwindPreserveWhitespace": false,
+  "svelteStrictMode": true,
 
   "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
   "overrides": [

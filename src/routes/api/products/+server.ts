@@ -2,12 +2,12 @@ import {
   addProduct,
   getProductFromForm,
   getProductsWithConfig,
-} from "$lib/server/features/product";
+} from "$lib/features/product/server";
 import {
   getPaginationFromSearchParams,
   serverErrorHandler,
   UnauthorizedError,
-} from "$lib/server/utils";
+} from "$lib/utils/server";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 

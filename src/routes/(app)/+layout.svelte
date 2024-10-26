@@ -1,12 +1,14 @@
 <script>
+  import { Header, NavMobile } from "$lib/components";
   import { headerHeight, navMobileHeight } from "$lib/stores";
-  import { Header, NavMobile } from "$lib/ui";
+
+  let { children } = $props();
 </script>
 
 <div class="flex min-h-dvh w-full flex-col items-start gap-4 p-4">
   <Header bind:headerHeight={$headerHeight} />
 
-  <slot />
+  {@render children()}
 
   <NavMobile bind:navMobileHeight={$navMobileHeight} />
 </div>

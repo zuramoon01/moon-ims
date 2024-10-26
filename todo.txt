@@ -1,0 +1,9 @@
+- Configure ESLint
+- Create custom deploy using code
+- Update README
+- Try LightningCSS to compile css
+- Write test
+- Configure VS Code
+- Implement cache
+- Explore vite.config.js
+- Add browserlist

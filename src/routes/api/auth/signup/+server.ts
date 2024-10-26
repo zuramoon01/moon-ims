@@ -1,5 +1,5 @@
-import { getUserFromSignUpForm, insertUser, setCookieUserToken } from "$lib/server/features/user";
-import { argonHash, serverErrorHandler } from "$lib/server/utils";
+import { getUserFromSignUpForm, insertUser, setCookieUser } from "$lib/features/user/server";
+import { argonHash, serverErrorHandler } from "$lib/utils/server";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
@@ -14,7 +14,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
       passwordHash,
     });
 
-    setCookieUserToken(cookies, user);
+    setCookieUser(cookies, user);
 
     return json(
       {

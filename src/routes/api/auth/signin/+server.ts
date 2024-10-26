@@ -1,9 +1,5 @@
-import {
-  getUserByUsename,
-  getUserFromSignInForm,
-  setCookieUserToken,
-} from "$lib/server/features/user";
-import { argonVerify, InvalidDataError, serverErrorHandler } from "$lib/server/utils";
+import { getUserByUsename, getUserFromSignInForm, setCookieUser } from "$lib/features/user/server";
+import { argonVerify, InvalidDataError, serverErrorHandler } from "$lib/utils/server";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
@@ -23,7 +19,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
       companyName: user.companyName,
     };
 
-    setCookieUserToken(cookies, userData);
+    setCookieUser(cookies, userData);
 
     return json({
       message: "Berhasil masuk.",
