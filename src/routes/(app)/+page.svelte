@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { getProductResponseData } from "$lib/features/product";
-  import { AddProduct } from "$lib/features/product/components";
+  import { AddProduct, DeleteProduct } from "$lib/features/product/components";
   import {
     headerHeight,
     navMobileHeight,
@@ -15,10 +15,17 @@
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import { ChevronLeft, ChevronRight, Filter } from "lucide-svelte";
+  import {
+    ArrowDownWideNarrow,
+    ArrowUpWideNarrow,
+    ChevronLeft,
+    ChevronRight,
+    Filter,
+  } from "lucide-svelte";
   import { onMount } from "svelte";
 
-  let { products, config, table, setProductStore, updateTableState } = $derived(productStore);
+  let { products, config, table, setProductStore, updateTable, updateTableOrder } =
+    $derived(productStore);
   let { currentPage, totalPage, from, to, limit, total } = $derived($config);
 
   let productTableTitleHeight = $state(0);
@@ -134,18 +141,22 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <Button
-          icon={{
-            Component: Filter,
-            attr: { "aria-label": "Filter", class: clsx("size-[1.125rem]") },
-          }}
-          attr={{
-            type: "button",
-            class: clsx("rounded size-9"),
-          }}
-        />
+        {#if $table.state === "false"}
+          <Button
+            icon={{
+              Component: Filter,
+              attr: { "aria-label": "Filter", class: clsx("size-[1.125rem]") },
+            }}
+            attr={{
+              type: "button",
+              class: clsx("rounded size-9"),
+            }}
+          />
 
-        <AddProduct />
+          <AddProduct />
+        {:else}
+          <DeleteProduct />
+        {/if}
       </div>
     </div>
 
@@ -162,36 +173,85 @@
             <Checkbox
               state={$table.state}
               onchange={() => {
-                updateTableState({ type: "group" });
+                updateTable({ type: "group" });
               }}
             />
           </div>
 
-          {#each productTableTitles as { name, classes }}
-            <div class={clsx(productTableColumnBaseClass, classes)}>{name}</div>
+          {#each productTableTitles as { key, name, classes }}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                classes,
+                key && ["cursor-pointer select-none", "hover:bg-black/5"],
+                "justify-between",
+              )}
+              onclick={() => {
+                if (key) {
+                  updateTableOrder(key);
+                }
+              }}
+            >
+              <p>{name}</p>
+
+              {#if $table.order.name !== null && key && key === $table.order.name}
+                {#if $table.order.sort === "ASC"}
+                  <ArrowUpWideNarrow class={clsx("size-4 shrink-0")} />
+                {:else}
+                  <ArrowDownWideNarrow class={clsx("size-4 shrink-0")} />
+                {/if}
+              {/if}
+            </div>
           {/each}
         </div>
 
-        {#each $products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice }}
-          <div class="flex w-full gap-[1px] text-sm">
+        {#each $products as { id, name, quantity, availability, buyPrice, totalBuyPrice, sellPrice, totalSellPrice } (id)}
+          <div class={clsx("group/row flex w-full gap-[1px] text-sm")}>
             <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
               <Checkbox
                 state={$table.products.has(id) ? "true" : "false"}
                 onchange={() => {
-                  updateTableState({ type: "single", productId: id });
+                  updateTable({ type: "single", productId: id });
                 }}
               />
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[0].classes)}>
+
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[0].classes,
+                "cursor-pointer",
+                "group-hover/row:bg-black/5",
+              )}
+              onclick={() => {}}
+            >
               {name}
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[1].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[1].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               {quantity}
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[2].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[2].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               <div
                 class={clsx(
-                  "flex items-center justify-center rounded px-4 py-1",
+                  "flex items-center justify-center rounded px-4 py-1 text-sm leading-none",
                   availability === "Tersedia" && "bg-green/60",
                   availability === "Sedikit" && "bg-yellow/60",
                   availability === "Tidak Tersedia" && "bg-red/60",
@@ -200,16 +260,44 @@
                 {availability}
               </div>
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[3].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[3].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               {buyPrice}
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[4].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[4].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               {totalBuyPrice}
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[5].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[5].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               {sellPrice}
             </div>
-            <div class={clsx(productTableColumnBaseClass, productTableTitles[6].classes)}>
+
+            <div
+              class={clsx(
+                productTableColumnBaseClass,
+                productTableTitles[6].classes,
+                "group-hover/row:bg-black/5",
+              )}
+            >
               {totalSellPrice}
             </div>
           </div>

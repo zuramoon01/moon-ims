@@ -3,6 +3,7 @@ import type { User } from "$lib/types";
 import { PayloadError } from "$lib/utils";
 import { object, safeParse, string } from "valibot";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAuthResponseData(data: any): { message: string; data: User } {
   const { success, output: responseData } = safeParse(
     object({

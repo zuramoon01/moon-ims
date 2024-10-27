@@ -59,6 +59,7 @@ export async function getUserFromRefreshToken(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getUserFromSignUpForm(data: any) {
   const {
     success,
@@ -95,6 +96,7 @@ export function getUserFromSignUpForm(data: any) {
   return user;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getUserFromSignInForm(data: any) {
   const {
     success,

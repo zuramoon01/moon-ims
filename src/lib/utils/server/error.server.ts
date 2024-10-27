@@ -2,6 +2,7 @@ import { HttpStatusCode } from "$lib/types";
 import { json } from "@sveltejs/kit";
 
 export function serverErrorHandler(error: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: any = {
     message: "Error tidak diketahui. Mohon laporkan kepada Developer.",
   };
@@ -29,8 +30,10 @@ export function serverErrorHandler(error: unknown) {
 export class DuplicateUserError extends Error {}
 
 export class InvalidDataError extends Error {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(message: string, data?: any) {
     super(message);
 

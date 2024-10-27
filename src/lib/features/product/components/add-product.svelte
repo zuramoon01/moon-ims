@@ -98,7 +98,6 @@
     onclick={closeDialog}
   ></div>
 
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <form
     use:dialog
     transition:fade={{
@@ -189,7 +188,7 @@
               min: 0,
               id: "buyPrice",
               name: "buyPrice",
-              placeholder: 10000,
+              placeholder: "10000",
               required: true,
               oninput: () => {
                 validateInput("buyPrice");
@@ -206,7 +205,7 @@
               min: 0,
               id: "sellPrice",
               name: "sellPrice",
-              placeholder: 15000,
+              placeholder: "15000",
               required: true,
               oninput: () => {
                 validateInput("sellPrice");
@@ -219,7 +218,7 @@
 
     <div class={clsx("flex w-full items-center justify-end gap-4", "max-sm:flex-col")}>
       <Button
-        text="Batalkan"
+        text="Batal"
         variant="outline"
         attr={{
           type: "button",

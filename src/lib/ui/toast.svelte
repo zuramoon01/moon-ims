@@ -60,7 +60,6 @@
 >
   {#each $toasts as { id, ids, content: { type, title, description } } (id)}
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <div
       id={ids.toast}
       role="alert"

@@ -16,6 +16,7 @@ export function createDialogStore() {
   const dialogIds = {
     dialog: generateId(),
     title: generateId(),
+    description: generateId(),
   };
 
   const focusHandler: {

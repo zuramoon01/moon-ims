@@ -1,26 +1,26 @@
-import type { CheckboxState, PaginationConfig } from "$lib/types";
+import type { CheckboxState, PaginationConfig, UserTable } from "$lib/types";
 
 type ProductAvailability = "Tersedia" | "Sedikit" | "Tidak Tersedia";
 
-export type ProductTable = {
+export interface ProductTable {
   id: number;
-  userId: string;
+  userId: UserTable["id"];
   name: string;
   quantity: number;
   availability: ProductAvailability;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
-};
+}
 
-export type PriceTable = {
+export interface PriceTable {
   id: number;
   productId: number;
   buyPrice: number;
   sellPrice: number;
   validFrom: Date;
   validTo: Date;
-};
+}
 
 export type Product = Pick<ProductTable, "id" | "name" | "quantity" | "availability"> &
   Pick<PriceTable, "buyPrice" | "sellPrice"> & {
@@ -39,11 +39,22 @@ export type FormattedProduct = Omit<
   totalSellPrice: string;
 };
 
+export type ColumnNamesProductTable =
+  | "name"
+  | "quantity"
+  | "availability"
+  | "buyPrice"
+  | "sellPrice";
+
 export interface ProductStore {
   products: Map<FormattedProduct["id"], FormattedProduct>;
   config: PaginationConfig;
   table: {
     state: CheckboxState;
     products: Map<FormattedProduct["id"], true>;
+    order: {
+      name: ColumnNamesProductTable | null;
+      sort: "ASC" | "DESC";
+    };
   };
 }

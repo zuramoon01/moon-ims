@@ -2,6 +2,7 @@ import type { PaginationConfig, Product } from "$lib/types";
 import { PayloadError } from "$lib/utils";
 import { array, flatten, literal, number, object, safeParse, string, union } from "valibot";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getProductResponseData(data: any): {
   message: string;
   data: { products: Product[]; config: PaginationConfig };

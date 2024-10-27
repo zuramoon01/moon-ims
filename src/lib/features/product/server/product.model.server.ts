@@ -1,6 +1,31 @@
 import { db, pricesTable, productsTable } from "$lib/database";
 import type { PriceTable, ProductTable, UserTable } from "$lib/types";
-import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
+import { InvalidDataError } from "$lib/utils/server";
+import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+
+export async function validateProductsById(data: {
+  ids: ProductTable["id"][];
+  userId: ProductTable["userId"];
+}) {
+  const { ids, userId } = data;
+
+  const [{ count: totalProduct }] = await db
+    .select({ count: count() })
+    .from(productsTable)
+    .innerJoin(pricesTable, eq(pricesTable.productId, productsTable.id))
+    .where(
+      and(
+        inArray(productsTable.id, ids),
+        eq(productsTable.userId, userId),
+        isNull(productsTable.deletedAt),
+        isNull(pricesTable.validTo),
+      ),
+    );
+
+  if (totalProduct !== ids.length) {
+    throw new InvalidDataError("Data produk tidak valid. Silahkan coba kembali.");
+  }
+}
 
 export function getTotalProduct(userId: UserTable["id"]) {
   return db
@@ -16,15 +41,9 @@ export function getTotalProduct(userId: UserTable["id"]) {
     );
 }
 
-export function getProducts({
-  userId,
-  limit,
-  offset,
-}: {
-  userId: UserTable["id"];
-  limit: number;
-  offset: number;
-}) {
+export function getProducts(data: { userId: UserTable["id"]; limit: number; offset: number }) {
+  const { userId, limit, offset } = data;
+
   return db
     .select({
       id: productsTable.id,
@@ -80,4 +99,11 @@ export function addProduct({
 
     await tx.insert(pricesTable).values({ productId: newProduct.id, buyPrice, sellPrice });
   });
+}
+
+export function deleteProducts(ids: ProductTable["id"][]) {
+  return db
+    .update(productsTable)
+    .set({ deletedAt: sql`now()` })
+    .where(inArray(productsTable.id, ids));
 }

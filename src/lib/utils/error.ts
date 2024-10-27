@@ -17,6 +17,7 @@ export class PayloadError extends Error {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleAxiosError(error: AxiosError<any, any>) {
   const { response, request, message } = error;
 

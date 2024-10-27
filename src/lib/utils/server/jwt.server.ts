@@ -8,7 +8,7 @@ export const JWTOptions = {
   RefreshToken: {
     expiresIn: "7d",
   },
-} satisfies { [key: string]: jwt.SignOptions };
+} satisfies Record<string, jwt.SignOptions>;
 
 export function createToken(payload: string | Buffer | object, options?: jwt.SignOptions) {
   return jwt.sign(payload, JWT_SECRET, options);

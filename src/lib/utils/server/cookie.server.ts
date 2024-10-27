@@ -24,12 +24,13 @@ export const Cookie = {
       secure: true,
     },
   },
-} satisfies {
-  [key: string]: {
+} satisfies Record<
+  string,
+  {
     Name: string;
     Options: CookieSerializeOptions & { path: string };
-  };
-};
+  }
+>;
 
 export function getCookie(cookies: Cookies, name: string) {
   return cookies.get(`${COOKIE_NAME_PREFIX}${name}`);

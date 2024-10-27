@@ -5,7 +5,8 @@
 
   interface Props {
     state: CheckboxState;
-    onchange?: Function | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onchange?: () => any | undefined;
   }
 
   let { state, onchange = undefined }: Props = $props();

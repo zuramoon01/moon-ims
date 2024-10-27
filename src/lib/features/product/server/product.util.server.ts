@@ -2,11 +2,10 @@ import { BuyPriceSchema, NameSchema, QuantitySchema, SellPriceSchema } from "$li
 import { getProducts, getTotalProduct } from "$lib/features/product/server";
 import type { UserTable } from "$lib/types";
 import { InvalidDataError } from "$lib/utils/server";
-import { flatten, object, safeParse } from "valibot";
+import { array, flatten, minLength, number, object, pipe, safeParse } from "valibot";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getProductFromForm(data: any) {
-  console.log(data);
-
   const {
     success,
     output: product,
@@ -30,6 +29,24 @@ export function getProductFromForm(data: any) {
   }
 
   return product;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getIdsFromForm(data: any) {
+  const { success, output, issues } = safeParse(
+    object({
+      ids: pipe(array(number()), minLength(1)),
+    }),
+    data,
+  );
+
+  if (!success) {
+    console.error(flatten(issues));
+
+    throw new InvalidDataError("Tidak ada produk yang diberikan.");
+  }
+
+  return output;
 }
 
 export async function getProductsWithConfig({

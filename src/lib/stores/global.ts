@@ -1,3 +1,4 @@
+import type { ColumnNamesProductTable } from "$lib/types";
 import { Box, ChartNoAxesCombined, Gauge, type Icon, ReceiptText } from "lucide-svelte";
 import { writable } from "svelte/store";
 
@@ -53,38 +54,47 @@ export const productTableColumnBaseClass = "flex shrink-0 items-center bg-white 
 
 export const productTableTitles = [
   {
+    key: "name",
     name: "Nama",
     // Kalkulasi Lebar Kolom
     // 100% = Ukuran yang bisa dicakup kolom nama
 
-    // 2.25rem Kolom ceklis / 6rem Kolom Jumlah ... 10rem Kolom Total Harga Jual
+    // 2.25rem Kolom ceklis / 8rem Kolom Jumlah ... 10rem Kolom Total Harga Jual
 
     // 7px Gap antara kolom nama - kolom total harga jual
     classes:
-      "w-[calc(100%_-_(2.25rem_+_6rem_+_12rem_+_12rem_+_10rem_+_12rem_+_10rem_+_7px))] min-w-60",
+      "w-[calc(100%_-_(2.25rem_+_8rem_+_12rem_+_14rem_+_10rem_+_14rem_+_10rem_+_7px))] min-w-60",
   },
   {
+    key: "quantity",
     name: "Jumlah",
-    classes: "w-[6rem]",
+    classes: "w-[8rem]",
   },
   {
+    key: "availability",
     name: "Ketersediaan",
     classes: "w-[12rem]",
   },
   {
+    key: "buyPrice",
     name: "Harga Beli Per Satuan",
-    classes: "w-[12rem]",
+    classes: "w-[14rem]",
   },
   {
     name: "Total Harga Beli",
     classes: "w-[10rem]",
   },
   {
+    key: "sellPrice",
     name: "Harga Jual Per Satuan",
-    classes: "w-[12rem]",
+    classes: "w-[14rem]",
   },
   {
     name: "Total Harga Jual",
     classes: "w-[10rem]",
   },
-] as const;
+] satisfies {
+  key?: ColumnNamesProductTable | never;
+  name: string;
+  classes: string;
+}[];

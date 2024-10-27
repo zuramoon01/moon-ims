@@ -6,27 +6,27 @@
   import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
   import { twMerge } from "tailwind-merge";
 
-  type ButtonProps = {
+  interface ButtonProps {
     element?: "button";
     attr?: HTMLButtonAttributes;
     status?: Status;
-  };
+  }
 
-  type AnchorProps = {
+  interface AnchorProps {
     element?: "a";
     attr?: HTMLAnchorAttributes;
     status?: never;
-  };
+  }
 
-  type BaseProps = {
-    variant?: "filled" | "outline" | "ghost" | null;
+  interface BaseProps {
+    variant?: "filled" | "danger" | "outline" | "ghost" | null;
     text?: string;
     textClass?: Class;
     icon?: {
       Component: typeof Icon;
       attr?: IconProps;
     };
-  };
+  }
 
   let {
     element = "button",
@@ -63,6 +63,13 @@
           "focus:bg-black/20",
           "focus-visible:bg-black/20 ",
           "active:bg-black/20",
+        ],
+        variant === "danger" && [
+          "bg-red/60 text-white/80",
+          "hover:bg-red/80",
+          "focus:bg-red/80",
+          "focus-visible:bg-red/80 ",
+          "active:bg-red/80",
         ],
         variant === "outline" && [
           !!text && "h-[calc(2.5rem_-_2px)]",

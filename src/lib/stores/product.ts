@@ -1,4 +1,10 @@
-import type { FormattedProduct, PaginationConfig, Product, ProductStore } from "$lib/types";
+import type {
+  ColumnNamesProductTable,
+  FormattedProduct,
+  PaginationConfig,
+  Product,
+  ProductStore,
+} from "$lib/types";
 import { rupiahCurrency } from "$lib/utils";
 import { derived, readonly, writable } from "svelte/store";
 
@@ -16,6 +22,10 @@ const createProductStore = () => {
     table: {
       state: "false",
       products: new Map(),
+      order: {
+        name: null,
+        sort: "DESC",
+      },
     },
   });
 
@@ -45,17 +55,20 @@ const createProductStore = () => {
     });
   }
 
-  function updateTableState({
+  function updateTable({
     type,
     productId,
+    action,
   }:
     | {
         type: "single";
         productId: FormattedProduct["id"];
+        action?: never;
       }
     | {
         type: "group";
         productId?: never;
+        action?: "reset";
       }) {
     productStore.update((currentState) => {
       const { products, table } = currentState;
@@ -67,7 +80,7 @@ const createProductStore = () => {
           table.products.set(productId, true);
         }
       } else {
-        if (table.state === "true") {
+        if (action === "reset" || table.state === "true") {
           table.products.clear();
         } else {
           products.forEach((product) => {
@@ -76,12 +89,32 @@ const createProductStore = () => {
         }
       }
 
-      if (table.products.size === products.size) {
+      if (products.size > 0 && table.products.size === products.size) {
         table.state = "true";
       } else if (table.products.size > 0) {
         table.state = "indeterminate";
       } else {
         table.state = "false";
+      }
+
+      return currentState;
+    });
+  }
+
+  function updateTableOrder(name: ColumnNamesProductTable) {
+    productStore.update((currentState) => {
+      const {
+        table: { order },
+      } = currentState;
+
+      if (name !== order.name) {
+        order.name = name;
+        order.sort = "DESC";
+      } else if (order.sort === "ASC") {
+        order.name = null;
+        order.sort = "DESC";
+      } else {
+        order.sort = "ASC";
       }
 
       return currentState;
@@ -111,7 +144,8 @@ const createProductStore = () => {
     config,
     table,
     setProductStore,
-    updateTableState,
+    updateTable,
+    updateTableOrder,
   };
 };
 
