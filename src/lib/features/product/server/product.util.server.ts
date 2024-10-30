@@ -6,7 +6,7 @@ import {
   SellPriceSchema,
 } from "$lib/features/product";
 import { getProducts, getTotalProduct } from "$lib/features/product/server";
-import type { UserTable } from "$lib/types";
+import type { OrderKey, SortKey, UserTable } from "$lib/types";
 import { InvalidDataError } from "$lib/utils/server";
 import { array, flatten, minLength, number, object, pipe, safeParse } from "valibot";
 
@@ -56,19 +56,19 @@ export function getIdsFromForm(data: any) {
   return output;
 }
 
-export async function getProductsWithConfig({
-  userId,
-  page,
-  limit,
-}: {
+export async function getProductsWithConfig(data: {
   userId: UserTable["id"];
   page: number;
   limit: number;
+  sort: SortKey;
+  order: OrderKey;
 }) {
+  let { userId, page, limit, sort, order } = data;
+
   let offset = (page - 1) * limit;
 
   let [products, [{ count: totalProduct }]] = await Promise.all([
-    getProducts({ userId, limit, offset }),
+    getProducts({ userId, limit, offset, sort, order }),
     getTotalProduct(userId),
   ]);
 
@@ -79,7 +79,7 @@ export async function getProductsWithConfig({
       offset = (page - 1) * limit;
     }
 
-    products = await getProducts({ userId, limit, offset });
+    products = await getProducts({ userId, limit, offset, sort, order });
   }
 
   return {
@@ -91,6 +91,8 @@ export async function getProductsWithConfig({
       to: Math.min(offset + limit, totalProduct),
       limit: limit,
       total: totalProduct,
+      sort,
+      order,
     },
   };
 }

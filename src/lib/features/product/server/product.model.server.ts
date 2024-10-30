@@ -1,7 +1,7 @@
 import { db, pricesTable, productsTable } from "$lib/database";
-import type { PriceTable, ProductTable, UserTable } from "$lib/types";
+import type { OrderKey, PriceTable, ProductTable, SortKey, UserTable } from "$lib/types";
 import { InvalidDataError } from "$lib/utils/server";
-import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 export async function validateProductsById(data: {
   ids: ProductTable["id"][];
@@ -41,8 +41,25 @@ export function getTotalProduct(userId: UserTable["id"]) {
     );
 }
 
-export function getProducts(data: { userId: UserTable["id"]; limit: number; offset: number }) {
-  const { userId, limit, offset } = data;
+export function getProducts(data: {
+  userId: UserTable["id"];
+  limit: number;
+  offset: number;
+  sort: SortKey;
+  order: OrderKey;
+}) {
+  const { userId, limit, offset, sort, order } = data;
+  const sortColumn = sql`${
+    sort === "name"
+      ? productsTable.name
+      : sort === "quantity"
+        ? productsTable.quantity
+        : sort === "buy_price"
+          ? pricesTable.buyPrice
+          : sort === "sell_price"
+            ? pricesTable.sellPrice
+            : productsTable.createdAt
+  }`;
 
   return db
     .select({
@@ -73,7 +90,7 @@ export function getProducts(data: { userId: UserTable["id"]; limit: number; offs
         isNull(pricesTable.validTo),
       ),
     )
-    .orderBy(desc(productsTable.createdAt))
+    .orderBy(order === "asc" ? asc(sortColumn) : desc(sortColumn))
     .limit(limit)
     .offset(offset);
 }

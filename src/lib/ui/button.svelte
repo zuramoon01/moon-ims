@@ -24,6 +24,7 @@
     textClass?: Class;
     icon?: {
       Component: typeof Icon;
+      side?: "left" | "right";
       attr?: IconProps;
     };
   }
@@ -50,7 +51,10 @@
         // Base
         "flex items-center justify-center overflow-hidden",
 
-        !!text && "h-10 w-full gap-2 rounded px-4 py-2",
+        !!text && [
+          "h-10 w-full gap-2 rounded px-4 py-2",
+          icon?.side === "right" && "flex-row-reverse",
+        ],
         !text && !!icon && "size-10 rounded-full",
 
         "focus:outline-none",
@@ -60,14 +64,14 @@
         variant === "filled" && [
           "bg-black/10",
           "hover:bg-black/20",
-          "focus:bg-black/20",
+          // "focus:bg-black/20",
           "focus-visible:bg-black/20 ",
           "active:bg-black/20",
         ],
         variant === "danger" && [
           "bg-red/60 text-white/80",
           "hover:bg-red/80",
-          "focus:bg-red/80",
+          // "focus:bg-red/80",
           "focus-visible:bg-red/80 ",
           "active:bg-red/80",
         ],
@@ -75,14 +79,14 @@
           !!text && "h-[calc(2.5rem_-_2px)]",
           "border border-black/60 text-black/60",
           "hover:border-black/80 hover:text-black/80",
-          "focus:border-black/80 focus:text-black/80",
+          // "focus:border-black/80 focus:text-black/80",
           "focus-visible:border-black/80 focus-visible:text-black/80",
           "active:border-black/80 active:text-black/80",
         ],
         variant === "ghost" && [
           "text-black/60",
           "hover:bg-black/10 hover:text-black/80",
-          "focus:bg-black/10 focus:text-black/80",
+          // "focus:bg-black/10 focus:text-black/80",
           "focus-visible:bg-black/10 focus-visible:text-black/80",
           "active:bg-black/10 active:text-black/80",
         ],

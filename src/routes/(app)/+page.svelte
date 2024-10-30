@@ -6,6 +6,7 @@
     AddProduct,
     DeleteProduct,
     EditProduct,
+    FilterProduct,
     openDialogEditProduct,
   } from "$lib/features/product/components";
   import {
@@ -21,12 +22,12 @@
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import { ChevronLeft, ChevronRight, Filter } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight } from "lucide-svelte";
   import { onMount } from "svelte";
 
   let { products, config, table, setProductStore, updateTable, updateSelectedId } =
     $derived(productStore);
-  let { currentPage, totalPage, from, to, limit, total } = $derived($config);
+  let { currentPage, totalPage, from, to, limit, total, sort, order } = $derived($config);
 
   let status: Status = $state("loading");
 
@@ -42,7 +43,7 @@
 
   function updateSearchParamsUrl() {
     return goto(
-      `${Route.Dashboard}?${new URLSearchParams({ page: inputs.page.toString(), limit: inputs.limit.toString() }).toString()}`,
+      `${Route.Dashboard}?${new URLSearchParams({ page: inputs.page.toString(), limit: inputs.limit.toString(), sort, order }).toString()}`,
     );
   }
 
@@ -146,36 +147,29 @@
   <div class="flex w-full flex-col items-start gap-4">
     <div
       bind:offsetHeight={productTableTitleHeight}
-      class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2"
+      class="flex w-full flex-col items-start gap-2"
     >
-      <div class="flex items-center gap-2">
-        <h2 class="text-2xl font-semibold leading-none">Produk</h2>
+      <div class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div class="flex items-center gap-2">
+          <h2 class="text-2xl font-semibold leading-none">Produk</h2>
 
-        {#if $products.length > 0}
-          <div class="leadin-none rounded bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums">
-            {total}
-          </div>
-        {/if}
-      </div>
+          {#if $products.length > 0}
+            <div
+              class="leadin-none rounded bg-black/10 px-2 py-1 text-xs font-semibold tabular-nums"
+            >
+              {total}
+            </div>
+          {/if}
+        </div>
 
-      <div class="flex items-center gap-4">
         {#if $table.state === "false"}
-          <Button
-            icon={{
-              Component: Filter,
-              attr: { "aria-label": "Filter", class: clsx("size-[1.125rem]") },
-            }}
-            attr={{
-              type: "button",
-              class: clsx("rounded size-9"),
-            }}
-          />
-
           <AddProduct />
         {:else}
           <DeleteProduct />
         {/if}
       </div>
+
+      <FilterProduct />
     </div>
 
     {#if $products.length > 0}

@@ -1,4 +1,4 @@
-import { LimitSchema, PageSchema } from "$lib/schemas";
+import { LimitSchema, OrderSchema, PageSchema, SortSchema } from "$lib/schemas";
 import { object, parse } from "valibot";
 
 export function getPaginationFromSearchParams(searchParams: URLSearchParams) {
@@ -6,6 +6,8 @@ export function getPaginationFromSearchParams(searchParams: URLSearchParams) {
     object({
       page: PageSchema,
       limit: LimitSchema,
+      sort: SortSchema,
+      order: OrderSchema,
     }),
     Object.fromEntries(searchParams.entries()),
   );

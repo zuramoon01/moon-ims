@@ -1,11 +1,12 @@
-import type { PaginationConfig, Product } from "$lib/types";
+import { OrderSchema, SortSchema } from "$lib/schemas";
+import type { PaginationConfig, Product, ProductConfig } from "$lib/types";
 import { PayloadError } from "$lib/utils";
 import { array, flatten, literal, number, object, safeParse, string, union } from "valibot";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getProductResponseData(data: any): {
   message: string;
-  data: { products: Product[]; config: PaginationConfig };
+  data: { products: Product[]; config: ProductConfig };
 } {
   const {
     success,
@@ -39,6 +40,8 @@ export function getProductResponseData(data: any): {
           to: number(),
           limit: number(),
           total: number(),
+          sort: SortSchema,
+          order: OrderSchema,
         }),
       }),
     }),

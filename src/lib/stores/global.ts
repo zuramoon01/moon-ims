@@ -49,6 +49,40 @@ export const navs = [
   },
 ] satisfies Nav[];
 
+export const productSortList = [
+  {
+    key: "created_at",
+    name: "Tanggal Dibuat",
+  },
+  {
+    key: "name",
+    name: "Nama",
+  },
+  {
+    key: "quantity",
+    name: "Jumlah",
+  },
+  {
+    key: "buy_price",
+    name: "Harga Beli",
+  },
+  {
+    key: "sell_price",
+    name: "Harga Jual",
+  },
+] as const;
+
+export const productOrderList = [
+  {
+    key: "asc",
+    name: "ASC",
+  },
+  {
+    key: "desc",
+    name: "DESC",
+  },
+] as const;
+
 export const productTableColumnBaseClass = "flex shrink-0 items-center bg-white px-4 py-2";
 
 export const productTableTitles = [

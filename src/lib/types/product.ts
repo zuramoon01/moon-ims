@@ -1,3 +1,4 @@
+import type { productOrderList, productSortList } from "$lib/stores";
 import type { CheckboxState, PaginationConfig, UserTable } from "$lib/types";
 
 type ProductAvailability = "Tersedia" | "Sedikit" | "Tidak Tersedia";
@@ -41,18 +42,20 @@ export type FormattedProduct = Omit<
   totalSellPrice: string;
 };
 
-export type OrderKey = "name" | "quantity" | "availability" | "buyPrice" | "sellPrice";
+export type SortKey = (typeof productSortList)[number]["key"];
+export type OrderKey = (typeof productOrderList)[number]["key"];
+
+export interface ProductConfig extends PaginationConfig {
+  sort: SortKey;
+  order: OrderKey;
+}
 
 export interface ProductStore {
   products: Map<FormattedProduct["id"], FormattedProduct>;
-  config: PaginationConfig;
+  config: ProductConfig;
   table: {
     state: CheckboxState;
     products: Map<FormattedProduct["id"], true>;
-    order: {
-      key: OrderKey | null;
-      sort: "ASC" | "DESC";
-    };
     selectedId: FormattedProduct["id"] | null;
   };
 }
