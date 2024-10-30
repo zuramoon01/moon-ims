@@ -1,7 +1,6 @@
 import type {
   FormattedProduct,
   OrderKey,
-  PaginationConfig,
   Product,
   ProductConfig,
   ProductStore,

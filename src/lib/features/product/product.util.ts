@@ -1,5 +1,5 @@
 import { OrderSchema, SortSchema } from "$lib/schemas";
-import type { PaginationConfig, Product, ProductConfig } from "$lib/types";
+import type { Product, ProductConfig } from "$lib/types";
 import { PayloadError } from "$lib/utils";
 import { array, flatten, literal, number, object, safeParse, string, union } from "valibot";
 

@@ -159,7 +159,7 @@
               openSort = !openSort;
             },
           }}
-          text={productSortList.find(({ key }) => key === sort)!.name}
+          text={productSortList.find(({ key }) => key === sort)?.name}
           textClass={clsx("w-16 text-left truncate text-sm font-semibold")}
           icon={{
             Component: ChevronDown,
@@ -201,7 +201,7 @@
               openOrder = !openOrder;
             },
           }}
-          text={productOrderList.find(({ key }) => key === order)!.name}
+          text={productOrderList.find(({ key }) => key === order)?.name}
           textClass={clsx("w-16 text-left truncate text-sm font-semibold")}
           icon={{
             Component: ChevronDown,

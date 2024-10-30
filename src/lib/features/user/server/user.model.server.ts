@@ -21,7 +21,7 @@ export async function getUserById(userId: UserTable["id"]): Promise<User> {
   return user;
 }
 
-export async function getUserByUsename(username: UserTable["username"]): Promise<User> {
+export async function getUserByUsename(username: UserTable["username"]) {
   const [user] = await db
     .select({
       id: usersTable.id,
