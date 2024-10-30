@@ -11,31 +11,43 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+const timestamps = {
+  createdAt: timestamp({
+    withTimezone: true,
+    mode: "date",
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp({
+    withTimezone: true,
+    mode: "date",
+  })
+    .notNull()
+    .defaultNow(),
+};
+
+const timestampsWithDeletedAt = {
+  ...timestamps,
+  deletedAt: timestamp({
+    withTimezone: true,
+    mode: "date",
+  }),
+};
+
 export const usersTable = pgTable(
   "users",
   {
-    id: uuid("id").notNull(),
-    username: varchar("username", {
+    id: uuid().notNull(),
+    username: varchar({
       length: 32,
     })
       .notNull()
       .unique("users_username_unique"),
-    passwordHash: varchar("password_hash", {
+    passwordHash: varchar({
       length: 256,
     }).notNull(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-    companyName: varchar("company_name", { length: 256 }).default(sql`NULL`),
+    ...timestamps,
+    companyName: varchar({ length: 256 }).default(sql`NULL`),
   },
   (table) => {
     return {
@@ -54,26 +66,11 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 export const productsTable = pgTable(
   "products",
   {
-    id: integer("id").notNull().generatedAlwaysAsIdentity(),
-    userId: uuid("user_id").notNull(),
-    name: varchar("name", { length: 256 }).notNull(),
-    quantity: smallint("quantity").notNull(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "date",
-    })
-      .notNull()
-      .defaultNow(),
-    deletedAt: timestamp("deleted_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
+    id: integer().notNull().generatedAlwaysAsIdentity(),
+    userId: uuid().notNull(),
+    name: varchar({ length: 256 }).notNull(),
+    quantity: smallint().notNull(),
+    ...timestampsWithDeletedAt,
   },
   (table) => {
     return {
@@ -104,17 +101,17 @@ export const productsRelations = relations(productsTable, ({ one, many }) => {
 export const pricesTable = pgTable(
   "prices",
   {
-    id: integer("id").notNull().generatedAlwaysAsIdentity(),
-    productId: integer("product_id").notNull(),
-    buyPrice: integer("buy_price").notNull(),
-    sellPrice: integer("sell_price").notNull(),
-    validFrom: timestamp("valid_from", {
+    id: integer().notNull().generatedAlwaysAsIdentity(),
+    productId: integer().notNull(),
+    buyPrice: integer().notNull(),
+    sellPrice: integer().notNull(),
+    validFrom: timestamp({
       withTimezone: true,
       mode: "date",
     })
       .notNull()
       .defaultNow(),
-    validTo: timestamp("valid_to", {
+    validTo: timestamp({
       withTimezone: true,
       mode: "date",
     }),
