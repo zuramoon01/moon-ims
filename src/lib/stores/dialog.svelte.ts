@@ -34,11 +34,11 @@ export function createDialogStore() {
       e.stopPropagation();
 
       if (e.shiftKey || e.key === "Tab" || e.key === "Escape") {
-        e.preventDefault();
-
         const { defaultIndex, elements } = focusHandler;
 
         if (e.shiftKey && e.key === "Tab") {
+          e.preventDefault();
+
           const activeElementIndex = elements.findIndex((el) => el === document.activeElement);
           const nextIndex =
             activeElementIndex === -1
@@ -49,6 +49,8 @@ export function createDialogStore() {
 
           elements[nextIndex].focus();
         } else if (e.key === "Tab") {
+          e.preventDefault();
+
           const activeElementIndex = elements.findIndex((el) => el === document.activeElement);
 
           const nextIndex =
@@ -60,6 +62,8 @@ export function createDialogStore() {
 
           elements[nextIndex].focus();
         } else if (e.key === "Escape") {
+          e.preventDefault();
+
           closeDialog();
         }
       }

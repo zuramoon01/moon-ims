@@ -1,3 +1,15 @@
+<script
+  module
+  lang="ts"
+>
+  import { createDialogStore } from "$lib/stores";
+
+  const { dialogState, dialogIds, openDialog, closeDialog, dialog, contentDialog } =
+    createDialogStore();
+
+  export const openDialogEditProduct = openDialog;
+</script>
+
 <script lang="ts">
   import { page } from "$app/stores";
   import {
@@ -7,7 +19,7 @@
     QuantitySchema,
     SellPriceSchema,
   } from "$lib/features/product";
-  import { addToasts, createDialogStore, createFormStore, productStore, Route } from "$lib/stores";
+  import { addToasts, createFormStore, productStore, Route } from "$lib/stores";
   import type { Status } from "$lib/types";
   import { Button, Input } from "$lib/ui";
   import { clientErrorHandler } from "$lib/utils";
@@ -16,30 +28,37 @@
   import { X } from "lucide-svelte";
   import { fade } from "svelte/transition";
 
-  const { dialogState, dialogIds, openDialog, closeDialog, dialog, contentDialog } =
-    createDialogStore();
-
-  let { setProductStore } = $derived(productStore);
+  const { products, table, setProductStore } = $derived(productStore);
+  const product = $derived($products.find((product) => product.id === selectedId));
+  const { selectedId } = $derived($table);
 
   let status: Status = $state("idle");
 
   let controller: AbortController;
 
-  const { inputs, errors, validateInput, hasError, resetForm } = createFormStore({
-    name: NameSchema,
-    quantity: QuantitySchema,
-    buyPrice: BuyPriceSchema,
-    sellPrice: SellPriceSchema,
-  });
+  const { inputs, errors, validateInput, hasError, resetForm } = createFormStore(
+    {
+      name: NameSchema,
+      quantity: QuantitySchema,
+      buyPrice: BuyPriceSchema,
+      sellPrice: SellPriceSchema,
+    },
+    {
+      name: "",
+      quantity: 0,
+      buyPrice: 0,
+      sellPrice: 0,
+    },
+  );
 
-  async function addProduct() {
+  async function updateProduct() {
     try {
       if (hasError()) {
         addToasts({
           type: "warning",
-          title: "Penambahan Produk Gagal",
+          title: "Pembaharuan Produk Gagal",
           description:
-            "Silahkan isi data pada form tambah produk sesuai dengan ketentuan yang diberikan.",
+            "Silahkan isi data pada form pembaharuan produk sesuai dengan ketentuan yang diberikan.",
         });
 
         return;
@@ -55,9 +74,16 @@
 
       const searchParamsUrl = $page.url.searchParams.toString();
 
-      const response = await axios.post(`${Route.Api.Product}?${searchParamsUrl}`, $inputs, {
-        signal: controller.signal,
-      });
+      const response = await axios.put(
+        `${Route.Api.Product}/${selectedId}?${searchParamsUrl}`,
+        {
+          priceId: product?.priceId,
+          ...$inputs,
+        },
+        {
+          signal: controller.signal,
+        },
+      );
 
       const { message, data } = getProductResponseData(response.data);
 
@@ -82,17 +108,20 @@
 
     status = "idle";
   }
-</script>
 
-<Button
-  text="Tambah Produk"
-  textClass={clsx("text-sm font-semibold leading-none")}
-  attr={{
-    type: "button",
-    class: clsx("w-auto h-9"),
-    onclick: openDialog,
-  }}
-/>
+  $effect(() => {
+    if (!selectedId || !product) {
+      return closeDialog();
+    }
+
+    $inputs = {
+      name: product.name,
+      quantity: product.quantity,
+      buyPrice: product.buyPriceRaw,
+      sellPrice: product.sellPriceRaw,
+    };
+  });
+</script>
 
 {#if $dialogState === "open"}
   <div
@@ -115,7 +144,7 @@
     onsubmit={(e) => {
       e.preventDefault();
 
-      addProduct();
+      updateProduct();
     }}
   >
     <div class="flex w-full items-center justify-between gap-1">
@@ -123,7 +152,7 @@
         id={dialogIds.title}
         class="text-lg font-semibold leading-none"
       >
-        Tambah Produk
+        Perbaharui Produk
       </h3>
 
       <Button
@@ -235,7 +264,7 @@
 
       <Button
         {status}
-        text="Tambah"
+        text="Perbaharui"
         attr={{
           class: clsx("sm:w-auto"),
         }}

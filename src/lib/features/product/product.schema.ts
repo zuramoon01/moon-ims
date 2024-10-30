@@ -1,4 +1,6 @@
-import { minLength, minValue, number, pipe, string } from "valibot";
+import { minLength, minValue, number, optional, pipe, string } from "valibot";
+
+export const PriceIdSchema = optional(number("Id Harga harus dalam bentuk angka."));
 
 export const NameSchema = pipe(
   string("Nama produk harus dalam bentuk huruf."),

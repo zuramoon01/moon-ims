@@ -33,18 +33,15 @@ export type FormattedProduct = Omit<
   Product,
   "buyPrice" | "totalBuyPrice" | "sellPrice" | "totalSellPrice"
 > & {
+  buyPriceRaw: number;
+  sellPriceRaw: number;
   buyPrice: string;
   totalBuyPrice: string;
   sellPrice: string;
   totalSellPrice: string;
 };
 
-export type ColumnNamesProductTable =
-  | "name"
-  | "quantity"
-  | "availability"
-  | "buyPrice"
-  | "sellPrice";
+export type OrderKey = "name" | "quantity" | "availability" | "buyPrice" | "sellPrice";
 
 export interface ProductStore {
   products: Map<FormattedProduct["id"], FormattedProduct>;
@@ -53,8 +50,9 @@ export interface ProductStore {
     state: CheckboxState;
     products: Map<FormattedProduct["id"], true>;
     order: {
-      name: ColumnNamesProductTable | null;
+      key: OrderKey | null;
       sort: "ASC" | "DESC";
     };
+    selectedId: FormattedProduct["id"] | null;
   };
 }

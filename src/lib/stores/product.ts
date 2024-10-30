@@ -1,10 +1,4 @@
-import type {
-  ColumnNamesProductTable,
-  FormattedProduct,
-  PaginationConfig,
-  Product,
-  ProductStore,
-} from "$lib/types";
+import type { FormattedProduct, PaginationConfig, Product, ProductStore } from "$lib/types";
 import { rupiahCurrency } from "$lib/utils";
 import { derived, readonly, writable } from "svelte/store";
 
@@ -23,9 +17,10 @@ const createProductStore = () => {
       state: "false",
       products: new Map(),
       order: {
-        name: null,
+        key: null,
         sort: "DESC",
       },
+      selectedId: null,
     },
   });
 
@@ -38,6 +33,8 @@ const createProductStore = () => {
         ({ buyPrice, totalBuyPrice, sellPrice, totalSellPrice, ...product }) => {
           products.set(product.id, {
             ...product,
+            buyPriceRaw: buyPrice,
+            sellPriceRaw: sellPrice,
             buyPrice: rupiahCurrency.format(buyPrice),
             totalBuyPrice: rupiahCurrency.format(totalBuyPrice),
             sellPrice: rupiahCurrency.format(sellPrice),
@@ -50,6 +47,11 @@ const createProductStore = () => {
 
       table.products.clear();
       table.state = "false";
+      table.order = {
+        key: null,
+        sort: "DESC",
+      };
+      table.selectedId = null;
 
       return currentState;
     });
@@ -101,25 +103,33 @@ const createProductStore = () => {
     });
   }
 
-  function updateTableOrder(name: ColumnNamesProductTable) {
+  function updateSelectedId(id: FormattedProduct["id"] | null) {
     productStore.update((currentState) => {
-      const {
-        table: { order },
-      } = currentState;
-
-      if (name !== order.name) {
-        order.name = name;
-        order.sort = "DESC";
-      } else if (order.sort === "ASC") {
-        order.name = null;
-        order.sort = "DESC";
-      } else {
-        order.sort = "ASC";
-      }
+      currentState.table.selectedId = id;
 
       return currentState;
     });
   }
+
+  // function updateTableOrder(name: ColumnNamesProductTable) {
+  //   productStore.update((currentState) => {
+  //     const {
+  //       table: { order },
+  //     } = currentState;
+
+  //     if (name !== order.name) {
+  //       order.name = name;
+  //       order.sort = "DESC";
+  //     } else if (order.sort === "ASC") {
+  //       order.name = null;
+  //       order.sort = "DESC";
+  //     } else {
+  //       order.sort = "ASC";
+  //     }
+
+  //     return currentState;
+  //   });
+  // }
 
   const products = readonly(
     derived(productStore, ($productStore) => {
@@ -145,7 +155,8 @@ const createProductStore = () => {
     table,
     setProductStore,
     updateTable,
-    updateTableOrder,
+    // updateTableOrder,
+    updateSelectedId,
   };
 };
 

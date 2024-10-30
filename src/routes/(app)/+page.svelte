@@ -2,7 +2,12 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { getProductResponseData } from "$lib/features/product";
-  import { AddProduct, DeleteProduct } from "$lib/features/product/components";
+  import {
+    AddProduct,
+    DeleteProduct,
+    EditProduct,
+    openDialogEditProduct,
+  } from "$lib/features/product/components";
   import {
     headerHeight,
     navMobileHeight,
@@ -11,27 +16,24 @@
     productTableTitles,
     Route,
   } from "$lib/stores";
+  import type { Status } from "$lib/types";
   import { Button, Checkbox, Input } from "$lib/ui";
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
-  import {
-    ArrowDownWideNarrow,
-    ArrowUpWideNarrow,
-    ChevronLeft,
-    ChevronRight,
-    Filter,
-  } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight, Filter } from "lucide-svelte";
   import { onMount } from "svelte";
 
-  let { products, config, table, setProductStore, updateTable, updateTableOrder } =
+  let { products, config, table, setProductStore, updateTable, updateSelectedId } =
     $derived(productStore);
   let { currentPage, totalPage, from, to, limit, total } = $derived($config);
 
+  let status: Status = $state("loading");
+
+  let controller: AbortController;
+
   let productTableTitleHeight = $state(0);
   let productTableInfoHeight = $state(0);
-
-  let inputPageElement: HTMLInputElement | undefined = $state(undefined);
 
   let inputs = $state({
     limit: 0,
@@ -46,9 +48,19 @@
 
   async function getProducts() {
     try {
+      if (status === "loading" && controller) {
+        controller.abort();
+      }
+
+      status = "loading";
+
+      controller = new AbortController();
+
       const searchParamsUrl = $page.url.searchParams.toString();
 
-      const response = await axios.get(`${Route.Api.Product}?${searchParamsUrl}`);
+      const response = await axios.get(`${Route.Api.Product}?${searchParamsUrl}`, {
+        signal: controller.signal,
+      });
 
       const { data } = getProductResponseData(response.data);
 
@@ -61,8 +73,14 @@
 
       await updateSearchParamsUrl();
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
+
       clientErrorHandler(error);
     }
+
+    status = "idle";
   }
 
   async function updateUrlAndProducts() {
@@ -168,6 +186,8 @@
           productTableInfoHeight +
           $navMobileHeight}px + 2px + {$navMobileHeight === 0 ? '6rem' : '7rem'}));"
       >
+        <EditProduct />
+
         <div class="flex min-h-9 w-full gap-[1px] text-nowrap text-sm font-medium leading-none">
           <div class={clsx(productTableColumnBaseClass, "w-9 justify-center")}>
             <Checkbox
@@ -178,31 +198,9 @@
             />
           </div>
 
-          {#each productTableTitles as { key, name, classes }}
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <div
-              class={clsx(
-                productTableColumnBaseClass,
-                classes,
-                key && ["cursor-pointer select-none", "hover:bg-black/5"],
-                "justify-between",
-              )}
-              onclick={() => {
-                if (key) {
-                  updateTableOrder(key);
-                }
-              }}
-            >
+          {#each productTableTitles as { name, classes }}
+            <div class={clsx(productTableColumnBaseClass, classes)}>
               <p>{name}</p>
-
-              {#if $table.order.name !== null && key && key === $table.order.name}
-                {#if $table.order.sort === "ASC"}
-                  <ArrowUpWideNarrow class={clsx("size-4 shrink-0")} />
-                {:else}
-                  <ArrowDownWideNarrow class={clsx("size-4 shrink-0")} />
-                {/if}
-              {/if}
             </div>
           {/each}
         </div>
@@ -225,9 +223,12 @@
                 productTableColumnBaseClass,
                 productTableTitles[0].classes,
                 "cursor-pointer",
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
-              onclick={() => {}}
+              onclick={() => {
+                updateSelectedId(id);
+                openDialogEditProduct();
+              }}
             >
               {name}
             </div>
@@ -236,7 +237,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[1].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               {quantity}
@@ -246,7 +247,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[2].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               <div
@@ -265,7 +266,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[3].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               {buyPrice}
@@ -275,7 +276,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[4].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               {totalBuyPrice}
@@ -285,7 +286,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[5].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               {sellPrice}
@@ -295,7 +296,7 @@
               class={clsx(
                 productTableColumnBaseClass,
                 productTableTitles[6].classes,
-                "group-hover/row:bg-black/5",
+                "group-hover/row:bg-blue/20",
               )}
             >
               {totalSellPrice}
@@ -313,7 +314,11 @@
   {#if $products.length > 0}
     <div
       bind:offsetHeight={productTableInfoHeight}
-      class="scrollbar-hide flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 overflow-x-auto rounded border border-black/10 px-4 py-2"
+      class={clsx(
+        "scrollbar-hide flex w-full items-start justify-between gap-x-4 gap-y-2 overflow-x-auto rounded border border-black/10 px-4 py-2",
+        "sm:items-center",
+        "max-sm:flex-col",
+      )}
     >
       <form
         onsubmit={(e) => {
@@ -332,91 +337,81 @@
           }}
         />
 
-        <div class="flex flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none">
+        <div
+          class="flex shrink-0 flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none"
+        >
           <p>Produk Per Halaman</p>
           <p class="tabular-nums">[ {from} - {to} ]</p>
         </div>
       </form>
 
-      <div class="flex items-center gap-4">
-        <Button
-          attr={{
-            type: "button",
-            class: clsx("shrink-0 rounded border h-8 w-12"),
-            onclick: () => {
-              updatePage("previous");
-            },
-          }}
-          variant="outline"
-          icon={{
-            Component: ChevronLeft,
-            attr: {
-              "aria-label": "Halaman Sebelumnya",
-              class: clsx("size-6"),
-            },
-          }}
-        />
-
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <div class={clsx("flex items-center gap-4", "max-sm:w-full max-sm:justify-between")}>
         <form
-          tabindex="0"
           onsubmit={(e) => {
             e.preventDefault();
 
             updatePage("input");
           }}
-          onclick={() => {
-            inputPageElement?.focus();
-          }}
-          class={clsx(
-            "flex h-8 shrink-0 cursor-text items-center gap-1 rounded border border-black/60 bg-white px-2 text-sm font-medium tabular-nums leading-none text-black/60 outline-none",
-
-            "placeholder:text-black/20",
-            "placeholder-shown:border-black/20",
-
-            "hover:border-blue/40",
-            "focus:border-blue/40",
-            "focus-visible:border-blue/40",
-            "active:border-blue/40",
-          )}
+          class="flex shrink-0 items-center gap-2"
         >
-          <input
-            bind:this={inputPageElement}
-            tabindex="-1"
-            type="number"
-            min={1}
-            max={totalPage}
+          <Input
             bind:value={inputs.page}
-            style="width: {(inputs.page && !isNaN(inputs.page)
-              ? inputs.page.toString().length
-              : 1) * 0.5625}rem;"
-            class="bg-transparent text-center outline-none"
+            containerClass={clsx("w-12")}
+            attr={{
+              type: "number",
+              min: 1,
+              max: totalPage,
+              class: clsx(
+                "h-8 w-12 px-2 text-center text-sm font-medium tabular-nums leading-none",
+              ),
+            }}
           />
 
-          <span>/</span>
-
-          <p>{totalPage}</p>
+          <div
+            class="flex flex-wrap items-center gap-1 text-nowrap text-sm font-medium leading-none"
+          >
+            <p>/</p>
+            <p class="tabular-nums">{totalPage}</p>
+          </div>
         </form>
 
-        <Button
-          attr={{
-            type: "button",
-            class: clsx("shrink-0 rounded border h-8 w-12"),
-            onclick: () => {
-              updatePage("next");
-            },
-          }}
-          variant="outline"
-          icon={{
-            Component: ChevronRight,
-            attr: {
-              "aria-label": "Halaman Berikutnya",
-              class: clsx("size-6"),
-            },
-          }}
-        />
+        <div class="flex items-center gap-4">
+          <Button
+            attr={{
+              type: "button",
+              class: clsx("shrink-0 rounded border h-8 w-12"),
+              onclick: () => {
+                updatePage("previous");
+              },
+            }}
+            variant="outline"
+            icon={{
+              Component: ChevronLeft,
+              attr: {
+                "aria-label": "Halaman Sebelumnya",
+                class: clsx("size-6"),
+              },
+            }}
+          />
+
+          <Button
+            attr={{
+              type: "button",
+              class: clsx("shrink-0 rounded border h-8 w-12"),
+              onclick: () => {
+                updatePage("next");
+              },
+            }}
+            variant="outline"
+            icon={{
+              Component: ChevronRight,
+              attr: {
+                "aria-label": "Halaman Berikutnya",
+                class: clsx("size-6"),
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   {/if}

@@ -1,4 +1,10 @@
-import { BuyPriceSchema, NameSchema, QuantitySchema, SellPriceSchema } from "$lib/features/product";
+import {
+  BuyPriceSchema,
+  NameSchema,
+  PriceIdSchema,
+  QuantitySchema,
+  SellPriceSchema,
+} from "$lib/features/product";
 import { getProducts, getTotalProduct } from "$lib/features/product/server";
 import type { UserTable } from "$lib/types";
 import { InvalidDataError } from "$lib/utils/server";
@@ -12,6 +18,7 @@ export function getProductFromForm(data: any) {
     issues,
   } = safeParse(
     object({
+      priceId: PriceIdSchema,
       name: NameSchema,
       quantity: QuantitySchema,
       buyPrice: BuyPriceSchema,

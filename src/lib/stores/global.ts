@@ -1,4 +1,3 @@
-import type { ColumnNamesProductTable } from "$lib/types";
 import { Box, ChartNoAxesCombined, Gauge, type Icon, ReceiptText } from "lucide-svelte";
 import { writable } from "svelte/store";
 
@@ -54,7 +53,6 @@ export const productTableColumnBaseClass = "flex shrink-0 items-center bg-white 
 
 export const productTableTitles = [
   {
-    key: "name",
     name: "Nama",
     // Kalkulasi Lebar Kolom
     // 100% = Ukuran yang bisa dicakup kolom nama
@@ -66,17 +64,14 @@ export const productTableTitles = [
       "w-[calc(100%_-_(2.25rem_+_8rem_+_12rem_+_14rem_+_10rem_+_14rem_+_10rem_+_7px))] min-w-60",
   },
   {
-    key: "quantity",
     name: "Jumlah",
     classes: "w-[8rem]",
   },
   {
-    key: "availability",
     name: "Ketersediaan",
     classes: "w-[12rem]",
   },
   {
-    key: "buyPrice",
     name: "Harga Beli Per Satuan",
     classes: "w-[14rem]",
   },
@@ -85,7 +80,6 @@ export const productTableTitles = [
     classes: "w-[10rem]",
   },
   {
-    key: "sellPrice",
     name: "Harga Jual Per Satuan",
     classes: "w-[14rem]",
   },
@@ -94,7 +88,6 @@ export const productTableTitles = [
     classes: "w-[10rem]",
   },
 ] satisfies {
-  key?: ColumnNamesProductTable | never;
   name: string;
   classes: string;
 }[];

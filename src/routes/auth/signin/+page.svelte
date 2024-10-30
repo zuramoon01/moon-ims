@@ -52,12 +52,16 @@
 
       addToasts({
         type: "success",
-        title: "Berhasil Masuk",
+        title: "Berhasil",
         description: message,
       });
 
       goto(Route.Dashboard);
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
+
       clientErrorHandler(error);
     }
 

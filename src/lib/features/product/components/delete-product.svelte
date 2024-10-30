@@ -48,12 +48,16 @@
 
       addToasts({
         type: "success",
-        title: "Berhasil Menambahkan",
+        title: "Berhasil",
         description: message,
       });
 
       closeDialog();
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
+
       clientErrorHandler(error);
     }
 

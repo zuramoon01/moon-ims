@@ -78,19 +78,51 @@ export function getProducts(data: { userId: UserTable["id"]; limit: number; offs
     .offset(offset);
 }
 
-export function addProduct({
-  userId,
-  name,
-  quantity,
-  buyPrice,
-  sellPrice,
-}: {
+export async function getProductById(data: {
+  id: ProductTable["id"];
+  userId: UserTable["id"];
+  priceId: PriceTable["id"];
+}) {
+  const { id, userId, priceId } = data;
+
+  const [product] = await db
+    .select({
+      id: productsTable.id,
+      name: productsTable.name,
+      quantity: productsTable.quantity,
+      priceId: pricesTable.id,
+      buyPrice: pricesTable.buyPrice,
+      sellPrice: pricesTable.sellPrice,
+    })
+    .from(productsTable)
+    .innerJoin(pricesTable, eq(pricesTable.productId, productsTable.id))
+    .where(
+      and(
+        eq(productsTable.id, id),
+        eq(productsTable.userId, userId),
+        isNull(productsTable.deletedAt),
+        eq(pricesTable.id, priceId),
+        isNull(pricesTable.validTo),
+      ),
+    )
+    .limit(1);
+
+  if (!product) {
+    throw new InvalidDataError(`Product dengan id ${id} tidak ditemukan.`);
+  }
+
+  return product;
+}
+
+export function addProduct(data: {
   userId: UserTable["id"];
   name: ProductTable["name"];
   quantity: ProductTable["quantity"];
   buyPrice: PriceTable["buyPrice"];
   sellPrice: PriceTable["sellPrice"];
 }) {
+  const { userId, name, quantity, buyPrice, sellPrice } = data;
+
   return db.transaction(async (tx) => {
     const [newProduct] = await tx
       .insert(productsTable)
@@ -101,9 +133,51 @@ export function addProduct({
   });
 }
 
+export function updateProduct(data: {
+  id: ProductTable["id"];
+  priceId: PriceTable["id"];
+  name: ProductTable["name"];
+  quantity: ProductTable["quantity"];
+  buyPrice: PriceTable["buyPrice"];
+  sellPrice: PriceTable["sellPrice"];
+  isProductChange: boolean;
+  isPriceChange: boolean;
+}) {
+  const { id, priceId, name, quantity, buyPrice, sellPrice, isProductChange, isPriceChange } = data;
+
+  return db.transaction(async (tx) => {
+    if (isProductChange) {
+      await tx
+        .update(productsTable)
+        .set({ name, quantity, updatedAt: sql`current_timestamp` })
+        .where(eq(productsTable.id, id));
+    }
+
+    if (isPriceChange) {
+      await Promise.all([
+        tx
+          .update(pricesTable)
+          .set({
+            validTo: sql`current_timestamp`,
+          })
+          .where(eq(pricesTable.id, priceId)),
+
+        tx
+          .insert(pricesTable)
+          .values({
+            productId: id,
+            buyPrice,
+            sellPrice,
+          })
+          .onConflictDoNothing(),
+      ]);
+    }
+  });
+}
+
 export function deleteProducts(ids: ProductTable["id"][]) {
   return db
     .update(productsTable)
-    .set({ deletedAt: sql`now()` })
+    .set({ deletedAt: sql`current_timestamp` })
     .where(inArray(productsTable.id, ids));
 }

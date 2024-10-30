@@ -2,7 +2,11 @@ import { get, writable } from "svelte/store";
 import { flatten, safeParse } from "valibot";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createFormStore<const Schemas extends Record<string, any>>(schemas: Schemas) {
+export function createFormStore<const Schemas extends Record<string, any>>(
+  schemas: Schemas,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialValue?: Record<keyof Schemas, any>,
+) {
   const fields = Object.keys(schemas) as (keyof Schemas)[];
 
   function createInitialStore<InitialValue>(initialValue: InitialValue) {
@@ -15,7 +19,7 @@ export function createFormStore<const Schemas extends Record<string, any>>(schem
     );
   }
 
-  const inputs = writable(createInitialStore(""));
+  const inputs = writable(initialValue ?? createInitialStore(""));
   const errors = writable(createInitialStore<string[]>([]));
 
   function validateInput(id: keyof Schemas) {

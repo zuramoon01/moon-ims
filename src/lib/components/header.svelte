@@ -42,6 +42,10 @@
 
       goto(Route.Auth.SignIn);
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
+
       clientErrorHandler(error);
     }
 
