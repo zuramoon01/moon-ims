@@ -4,5 +4,4 @@
 - Create custom deploy using code
 - Configure ESLint
 - Try LightningCSS to compile css
-- Configure VS Code
 - Update README
