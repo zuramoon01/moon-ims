@@ -49,14 +49,12 @@ export const usersTable = pgTable(
     ...timestamps,
     companyName: varchar({ length: 256 }).default(sql`NULL`),
   },
-  (table) => {
-    return {
-      primaryKey: primaryKey({
-        name: "users_pkey",
-        columns: [table.id],
-      }),
-    };
-  },
+  (table) => [
+    primaryKey({
+      name: "users_pkey",
+      columns: [table.id],
+    }),
+  ],
 );
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
@@ -72,20 +70,18 @@ export const productsTable = pgTable(
     quantity: smallint().notNull(),
     ...timestampsWithDeletedAt,
   },
-  (table) => {
-    return {
-      primaryKey: primaryKey({
-        name: "products_pkey",
-        columns: [table.id],
-      }),
-      userReference: foreignKey({
-        name: "products_user_id_fkey",
-        columns: [table.userId],
-        foreignColumns: [usersTable.id],
-      }).onDelete("cascade"),
-      nameIdx: index("products_name_idx").on(table.name),
-    };
-  },
+  (table) => [
+    primaryKey({
+      name: "products_pkey",
+      columns: [table.id],
+    }),
+    foreignKey({
+      name: "products_user_id_fkey",
+      columns: [table.userId],
+      foreignColumns: [usersTable.id],
+    }).onDelete("cascade"),
+    index("products_name_idx").on(table.name),
+  ],
 );
 
 export const productsRelations = relations(productsTable, ({ one, many }) => {
@@ -116,19 +112,17 @@ export const pricesTable = pgTable(
       mode: "date",
     }),
   },
-  (table) => {
-    return {
-      primaryKey: primaryKey({
-        name: "prices_pkey",
-        columns: [table.id],
-      }),
-      productReference: foreignKey({
-        name: "prices_product_id_fkey",
-        columns: [table.productId],
-        foreignColumns: [productsTable.id],
-      }).onDelete("cascade"),
-    };
-  },
+  (table) => [
+    primaryKey({
+      name: "prices_pkey",
+      columns: [table.id],
+    }),
+    foreignKey({
+      name: "prices_product_id_fkey",
+      columns: [table.productId],
+      foreignColumns: [productsTable.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 export const pricesRelations = relations(pricesTable, ({ one }) => {
