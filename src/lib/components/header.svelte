@@ -1,18 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { addToasts, navs, Route, user } from "$lib/stores";
+  import { addToasts, headerHeight, navs, Route, user } from "$lib/stores";
   import type { Status } from "$lib/types";
   import { Button } from "$lib/ui";
   import { clientErrorHandler } from "$lib/utils";
   import axios from "axios";
   import clsx from "clsx";
   import { LogOut } from "lucide-svelte";
-
-  let {
-    headerHeight = $bindable(),
-  }: {
-    headerHeight: number;
-  } = $props();
 
   let status: Status = $state("idle");
 
@@ -54,7 +48,7 @@
 </script>
 
 <header
-  bind:offsetHeight={headerHeight}
+  bind:offsetHeight={$headerHeight}
   class="flex w-full items-center justify-between overflow-hidden rounded-lg border border-black/10 p-4"
 >
   <div class={clsx("flex items-center", "lg:w-full lg:max-w-80")}>

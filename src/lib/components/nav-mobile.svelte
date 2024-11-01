@@ -1,20 +1,14 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { navs } from "$lib/stores";
+  import { navMobileHeight, navs } from "$lib/stores";
   import { Button } from "$lib/ui";
   import clsx from "clsx";
-
-  let {
-    navMobileHeight = $bindable(),
-  }: {
-    navMobileHeight: number;
-  } = $props();
 
   const totalNav = navs.length;
 </script>
 
 <nav
-  bind:offsetHeight={navMobileHeight}
+  bind:offsetHeight={$navMobileHeight}
   class={clsx(
     // Kalkulasi Gap calc((100% - (4rem * 4 + clamp(2rem, 100%, 8%))) / 3)
     // calc(( [100%]  - ( [4rem * 4] + [clamp(2rem, 100%, 8%)] )) / [3] )
